@@ -1,6 +1,9 @@
 import UIKit
 
 final class SingleImageViewController: UIViewController {
+        
+    @IBOutlet private var imageView: UIImageView!
+    @IBOutlet private var scrollView: UIScrollView!
     
     var image: UIImage? {
         didSet {
@@ -11,9 +14,6 @@ final class SingleImageViewController: UIViewController {
             rescaleAndCenterImageInScrollView(image: image)
         }
     }
-    
-    @IBOutlet private var imageView: UIImageView!
-    @IBOutlet private var scrollView: UIScrollView!
 
     private var scrollViewVisibleSize: CGSize {
         let contentInset = scrollView.contentInset
@@ -39,19 +39,6 @@ final class SingleImageViewController: UIViewController {
         imageView.frame.size = image.size
         rescaleAndCenterImageInScrollView(image: image)
     }
- 
-    @IBAction func didTapBackButton(_ sender: Any) {
-        dismiss(animated: true, completion: nil)
-    }
-    
-    @IBAction func didTapShareButton(_ sender: Any) {
-        guard let image else { return }
-        let share = UIActivityViewController(
-            activityItems: [image],
-            applicationActivities: nil
-        )
-        present(share, animated: true, completion: nil)
-    }
     
     func scrollViewDidZoom(_ scrollView: UIScrollView) {
         centerScrollViewContents()
@@ -63,6 +50,13 @@ final class SingleImageViewController: UIViewController {
         view.layoutIfNeeded()
         let visibleRectSize = scrollView.bounds.size
         let imageSize = image.size
+        if imageSize.width != 0 && imageSize.height != 0 {
+            let hScale = visibleRectSize.width / imageSize.width
+            let vScale = visibleRectSize.height / imageSize.height
+        } else {
+            let hScale: CGFloat = 1
+            let vScale: CGFloat = 1
+        }
         let hScale = visibleRectSize.width / imageSize.width
         let vScale = visibleRectSize.height / imageSize.height
         let scale = min(maxZoomScale, max(minZoomScale, min(hScale, vScale)))
@@ -117,6 +111,19 @@ final class SingleImageViewController: UIViewController {
         }
 
         imageView.center = imageCenter
+    }
+    
+    @IBAction func didTapBackButton(_ sender: Any) {
+        dismiss(animated: true, completion: nil)
+    }
+    
+    @IBAction func didTapShareButton(_ sender: Any) {
+        guard let image else { return }
+        let share = UIActivityViewController(
+            activityItems: [image],
+            applicationActivities: nil
+        )
+        present(share, animated: true, completion: nil)
     }
 }
 
