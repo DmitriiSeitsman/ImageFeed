@@ -69,6 +69,11 @@
 			path = ImageFeedUITests;
 			sourceTree = "<group>";
 		};
+		B8A4964D2D905D130096E931 /* Auth */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Auth;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -115,6 +120,7 @@
 		B895D52F2D674444006C0C94 = {
 			isa = PBXGroup;
 			children = (
+				B8A4964D2D905D130096E931 /* Auth */,
 				B89204AB2D7A219400B091DF /* SingleImage */,
 				B89204AA2D7A218300B091DF /* Profile */,
 				B89D28332D7357C4007E8D77 /* ImagesList */,
@@ -161,6 +167,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				B895D53A2D674444006C0C94 /* ImageFeed */,
+				B8A4964D2D905D130096E931 /* Auth */,
 			);
 			name = ImageFeed;
 			packageProductDependencies = (
