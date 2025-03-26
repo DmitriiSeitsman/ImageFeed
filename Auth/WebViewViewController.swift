@@ -19,8 +19,9 @@ final class WebViewViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        loadAuthView()
         webView.navigationDelegate = self
+        loadAuthView()
+        
     }
     
     private func loadAuthView() {
@@ -53,12 +54,12 @@ final class WebViewViewController: UIViewController {
             context: nil)
         updateProgress()
     }
-
+    
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         webView.removeObserver(self, forKeyPath: #keyPath(WKWebView.estimatedProgress), context: nil)
     }
-
+    
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if keyPath == #keyPath(WKWebView.estimatedProgress) {
             updateProgress()
@@ -66,27 +67,26 @@ final class WebViewViewController: UIViewController {
             super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
         }
     }
-
+    
     private func updateProgress() {
         progressView.progress = Float(webView.estimatedProgress)
         progressView.isHidden = fabs(webView.estimatedProgress - 1.0) <= 0.0001
     }
 }
 
-
-
 extension WebViewViewController: WKNavigationDelegate {
-    func webView(
-        _ webView: WKWebView,
-        decidePolicyFor navigationAction: WKNavigationAction,
-        decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
-    ) {
-         if let code = code(from: navigationAction) {
+        func webView(
+            _ webView: WKWebView,
+            decidePolicyFor navigationAction: WKNavigationAction,
+            decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
+        ) {
+            if let code = code(from: navigationAction) {
+                delegate?.webViewViewController(self, didAuthenticateWithCode: code)
                 decisionHandler(.cancel)
-          } else {
+            } else {
                 decisionHandler(.allow)
             }
-    }
+        }
     
     private func code(from navigationAction: WKNavigationAction) -> String? {
         if
