@@ -89,16 +89,27 @@ extension WebViewViewController: WKNavigationDelegate {
         }
     
     private func code(from navigationAction: WKNavigationAction) -> String? {
-        if
-            let url = navigationAction.request.url,
-            let urlComponents = URLComponents(string: url.absoluteString),
-            urlComponents.path == "/oauth/authorize/native",
-            let items = urlComponents.queryItems,
-            let codeItem = items.first(where: { $0.name == "code" })
-        {
-            return codeItem.value
-        } else {
+            guard let url = navigationAction.request.url else {
+                return nil
+        }
+            guard let urlComponents = URLComponents(string: url.absoluteString) else {
+                print ("Could not create URLComponents from \(url.absoluteString)")
+                return nil
+        }
+        print(urlComponents.path)
+        
+        guard urlComponents.path == "/oauth/authorize/native" else {
+            print("URL path does not match expected path: \(urlComponents.path)")
             return nil
         }
+            guard let items = urlComponents.queryItems else {
+                print("Missing query parameters")
+                return nil
+        }
+            guard let codeItem = items.first(where: { $0.name == "code" }) else {
+                print("Missing 'code' in query parameters")
+                return nil
+        }
+            return codeItem.value
     }
 }

@@ -1,25 +1,5 @@
 import UIKit
 
-struct OAuthTokenResponseBody : Decodable {
-    let accessToken: String
-    let tokenType: String
-    let refreshToken: String
-    let scope: String
-    let createdAt: Date?
-    let userID: Int
-    let username: String
-    
-    private enum CodingKeys: String, CodingKey {
-        case accessToken = "access_token"
-        case tokenType = "token_type"
-        case refreshToken = "refresh_token"
-        case scope = "scope"
-        case createdAt = "created_at"
-        case userID = "user_id"
-        case username = "username"
-    }
-}
-
 final class OAuth2Service {
     
     static let shared = OAuth2Service()
@@ -41,33 +21,27 @@ final class OAuth2Service {
         }
     }
     
-    func fetchOAuthToken(code: String, handler: @escaping (Result<Data, Error>) -> Void) {
+    func fetchOAuthToken(code: String, handler: @escaping (Swift.Result<String, Error>) -> Void) {
         guard let request = makeRequest(code: code) else {
             return
         }
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            
-            if let error = error {
-                handler(.failure(error))
-                return
-            }
-            
-            if let response = response as? HTTPURLResponse,
-               response.statusCode < 200 || response.statusCode >= 300 {
-                handler(.failure(NetworkError.codeError))
-                return
-            }
-            guard let data = data else { return }
+        let session = URLSession.shared
+        let task = session.data(for: request) {result in switch result {
+            case .success(let data):
             switch OAuth2Service.decode(from: data) {
             case .success(let response):
                 print ("SUCCESS, ACCESS TOKEN: ---> \(response.accessToken)")
                 self.oauth2TokenStorage.token = response.accessToken
                 print("Actual TOKEN in storage:", self.oauth2TokenStorage.token)
-                handler(.success(data))
+                handler(.success(response.accessToken))
             case .failure(let error):
+                print("error: \(String(describing: error))")
                 handler(.failure(error))
             }
-            handler(.success(data))
+            case .failure(let error):
+            print("error: \(String(describing: error))")
+                handler(.failure(error))
+            }
         }
         task .resume()
     }
