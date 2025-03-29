@@ -51,6 +51,11 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		B88281E22D948F6900B493B3 /* AuthService */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = AuthService;
+			sourceTree = "<group>";
+		};
 		B895D53A2D674444006C0C94 /* ImageFeed */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -67,6 +72,16 @@
 		B895D55B2D674445006C0C94 /* ImageFeedUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = ImageFeedUITests;
+			sourceTree = "<group>";
+		};
+		B8A4964D2D905D130096E931 /* Auth */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Auth;
+			sourceTree = "<group>";
+		};
+		B8E367B42D9486A10025D980 /* SplashViewController */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SplashViewController;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -115,13 +130,16 @@
 		B895D52F2D674444006C0C94 = {
 			isa = PBXGroup;
 			children = (
-				B89204AB2D7A219400B091DF /* SingleImage */,
-				B89204AA2D7A218300B091DF /* Profile */,
-				B89D28332D7357C4007E8D77 /* ImagesList */,
+				B8A4964D2D905D130096E931 /* Auth */,
+				B88281E22D948F6900B493B3 /* AuthService */,
 				B895D53A2D674444006C0C94 /* ImageFeed */,
 				B895D5512D674445006C0C94 /* ImageFeedTests */,
 				B895D55B2D674445006C0C94 /* ImageFeedUITests */,
+				B89D28332D7357C4007E8D77 /* ImagesList */,
 				B895D5392D674444006C0C94 /* Products */,
+				B89204AA2D7A218300B091DF /* Profile */,
+				B89204AB2D7A219400B091DF /* SingleImage */,
+				B8E367B42D9486A10025D980 /* SplashViewController */,
 			);
 			sourceTree = "<group>";
 		};
@@ -160,7 +178,10 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				B88281E22D948F6900B493B3 /* AuthService */,
 				B895D53A2D674444006C0C94 /* ImageFeed */,
+				B8A4964D2D905D130096E931 /* Auth */,
+				B8E367B42D9486A10025D980 /* SplashViewController */,
 			);
 			name = ImageFeed;
 			packageProductDependencies = (
