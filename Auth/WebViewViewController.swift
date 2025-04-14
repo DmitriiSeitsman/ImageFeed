@@ -21,7 +21,6 @@ final class WebViewViewController: UIViewController {
         super.viewDidLoad()
         webView.navigationDelegate = self
         loadAuthView()
-        
     }
     
     private func loadAuthView() {

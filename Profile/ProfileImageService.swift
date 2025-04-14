@@ -1,0 +1,101 @@
+import UIKit
+import Kingfisher
+
+struct UserResult: Codable {
+    let profileImage: ProfileImage?
+    
+    private enum CodingKeys: String, CodingKey {
+        case profileImage = "profile_image"
+    }
+}
+
+struct ProfileImage: Codable {
+    let small: String?
+    let medium: String?
+    let large: String?
+    
+    private enum CodingKeys: String, CodingKey {
+        case small = "small"
+        case medium = "medium"
+        case large = "large"
+    }
+}
+
+final class ProfileImageService {
+    
+    private(set) var avatarURL: String?
+    private var usernameInStorage = OAuth2TokenStorage().username
+    private let urlSession = URLSession.shared
+    private var task: URLSessionTask?
+    static let shared = ProfileImageService()
+    static let didChangeNotification = Notification.Name(rawValue: "ProfileImageProviderDidChange")
+    
+    private init() {}
+    
+    
+    func fetchProfileImageURL(authToken: String?, username: String?, _ completion: @escaping (Result<String, Error>) -> Void) {
+        guard let authToken = authToken,
+              let username = username  else {
+            return
+        }
+        guard let request = makeImageRequest(authToken: authToken, username: username) else {
+            print("func fetchProfileImageURL: Request failed")
+            completion(.failure(AuthServiceError.invalidRequest))
+            return
+        }
+        let session = URLSession.shared
+        let task = session.data(for: request) {result in DispatchQueue.main.async {
+            switch result {
+            case .success(let data):
+                switch ProfileImageService().decodeImage(data) {
+                case .success(let response):
+                    self.avatarURL = response.profileImage?.medium
+                    let profileImageURL = self.avatarURL as Any
+                    NotificationCenter.default
+                        .post(
+                            name: ProfileImageService.didChangeNotification,
+                            object: self,
+                            userInfo: ["URL": profileImageURL])
+                    completion(.success(String(describing: self.avatarURL)))
+                case .failure(let error):
+                    print("func fetchProfile error: \(String(describing: error))")
+                    completion(.failure(error))
+                }
+            case .failure(let error):
+                print("func fetchProfile error: \(String(describing: error))")
+                completion(.failure(error))
+            }
+        }
+        }
+        self.task = task
+        task .resume()
+    }
+    
+    func decodeImage(_ data: Data)  -> Result<UserResult, Error>  {
+        let decoder = JSONDecoder()
+        do {
+            let decodedData = try decoder.decode(UserResult.self, from: data)
+            return .success(decodedData)
+        } catch {
+            print("-->UNABLE TO PARSE IMAGE FROM JSON<--")
+            return .failure(error)
+        }
+    }
+    
+    func makeImageRequest(authToken: String?, username: String?) -> URLRequest? {
+        print("""
+---> func makeImageRequest <---
+token: \(authToken ?? "NIL")
+username: \(username ?? "NIL")
+-------------------------------
+""")
+        let url = URL(string: "https://api.unsplash.com/users/\(username ?? "no username in storage")")
+        var request = URLRequest(url: url!)
+        if let authToken = authToken {
+            request.httpMethod = "GET"
+            request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        }
+        return request
+    }
+
+}

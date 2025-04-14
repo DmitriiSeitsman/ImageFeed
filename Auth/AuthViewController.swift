@@ -9,6 +9,9 @@ final class AuthViewController: UIViewController {
     
     private let showWebViewSegueIdentifier = "ShowWebView"
     private let oauth2Service = OAuth2Service.shared
+    private static var window: UIWindow? {
+            return UIApplication.shared.windows.first
+        }
     
     weak var delegate: AuthViewControllerDelegate?
     
@@ -37,19 +40,27 @@ final class AuthViewController: UIViewController {
         navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         navigationItem.backBarButtonItem?.tintColor = UIColor.ypBlack
     }
+    static func showHUD() {
+        window?.isUserInteractionEnabled = false
+        ProgressHUD.animate()
+    }
+    static func dismissHUD() {
+        window?.isUserInteractionEnabled = true
+        ProgressHUD.dismiss()
+    }
 }
 
 extension AuthViewController: WebViewViewControllerDelegate {
     
     func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String) {
-        ProgressHUD.animate()
+        AuthViewController.showHUD()
         oauth2Service.fetchOAuthToken(code: code) { [weak self] token in
             switch token {
             case .success(let result):
                 DispatchQueue.main.async {
                     self?.delegate?.authViewController(self ?? AuthViewController(), didAuthenticateWithCode: code)
                 }
-                ProgressHUD.dismiss()
+                AuthViewController.dismissHUD()
                 print("Result: \(result)")
             case .failure(let error):
                 print("Error fetching token: \(error)")
