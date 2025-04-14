@@ -20,21 +20,24 @@ final class ProfileViewController: UIViewController {
             ) { [weak self] _ in
                 guard let self = self else { return }
                 self.updateAvatar()
+                self.updateProfileDetails(profile: ProfileService.shared.profile)
             }
-        updateAvatar()
-        updateProfileDetails(profile: ProfileService.shared.profile)
+        
         setupUI()
         configureuserNameLabel(userNameLabel, text: "Екатерина Новикова", fontSize: 23, color: .ypWhite)
         configureLoginNameLabel(loginNameLabel, text: "@ekaterinanovikova", fontSize: 13, color: .ypGray)
         configureDescriptionLabel(descriptionLabel, text: "Hello World!", fontSize: 13, color: .ypWhite)
+        updateAvatar()
+        updateProfileDetails(profile: ProfileService.shared.profile)
     }
     
     private func updateProfileDetails(profile: Profile?) {
         guard let profile = profile else { return }
-        DispatchQueue.main.async {
-            self.userNameLabel.text = "\(profile.firstName) \(profile.lastName)"
-            self.loginNameLabel.text = "@\(profile.username)"
-            self.descriptionLabel.text = profile.bio
+        print(profile)
+        DispatchQueue.main.async { [self] in
+            userNameLabel.text = "\(profile.firstName) \(profile.lastName)"
+            loginNameLabel.text = "@\(profile.username)"
+            descriptionLabel.text = profile.bio
         }
     }
     

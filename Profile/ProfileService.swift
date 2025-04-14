@@ -26,6 +26,15 @@ struct Profile {
     let loginName: String
     let bio: String
     let profileImageURL: String
+    init(username: String, firstName: String, lastName: String, name: String, loginName: String, bio: String, profileImageURL: String) {
+        self.username = username
+        self.firstName = firstName
+        self.lastName = lastName
+        self.name = name
+        self.loginName = loginName
+        self.bio = bio
+        self.profileImageURL = profileImageURL
+    }
 }
 
 final class ProfileService {
@@ -56,6 +65,7 @@ final class ProfileService {
                     self.usernameInStorage = response.username ?? ""
                     let result = ProfileService().convertStruct(profile: response)
                     self.profile = result
+                    print(self.profile ?? "NO INFO in Struct")
                     ProfileImageService.shared.fetchProfileImageURL(authToken: authToken, username: self.usernameInStorage) { _ in }
                     completion(.success(result))
                 case .failure(let error):

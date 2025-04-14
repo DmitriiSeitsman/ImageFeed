@@ -13,7 +13,7 @@
         <!--ImageList-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController title="ImageList" id="BYZ-38-t0r" customClass="ImagesListViewController" customModule="ImageFeed" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ImagesListViewController" title="ImageList" id="BYZ-38-t0r" customClass="ImagesListViewController" customModule="ImageFeed" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -104,7 +104,7 @@
         <!--Tab Bar Controller-->
         <scene sceneID="I98-qd-6fa">
             <objects>
-                <tabBarController storyboardIdentifier="TabBarViewController" id="9zq-Jb-NWJ" sceneMemberID="viewController">
+                <tabBarController storyboardIdentifier="TabBarViewController" id="9zq-Jb-NWJ" customClass="TabBarController" customModule="ImageFeed" customModuleProvider="target" sceneMemberID="viewController">
                     <tabBar key="tabBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="erl-lj-ZFO">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="49"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -114,10 +114,6 @@
                             <color key="backgroundColor" name="YP Black"/>
                         </tabBarAppearance>
                     </tabBar>
-                    <connections>
-                        <segue destination="y1e-Nr-2fu" kind="relationship" relationship="viewControllers" id="k9k-Uk-Bj0"/>
-                        <segue destination="2bI-yd-zkX" kind="relationship" relationship="viewControllers" id="rCb-6r-gzC"/>
-                    </connections>
                 </tabBarController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="v2D-Pf-GSO" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -211,22 +207,6 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="I4h-O5-llr" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="528.98550724637687" y="774.77678571428567"/>
-        </scene>
-        <!--Profile View Controller-->
-        <scene sceneID="PAv-Uo-SAW">
-            <objects>
-                <viewController id="2bI-yd-zkX" customClass="ProfileViewController" customModule="ImageFeed" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="FpB-cW-qe5">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <viewLayoutGuide key="safeArea" id="RbW-yn-0O6"/>
-                        <color key="backgroundColor" name="YP Black"/>
-                    </view>
-                    <tabBarItem key="tabBarItem" title="" image="tab_profile_active" id="sYv-3r-UMR"/>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="xB1-hm-owO" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="513.04347826086962" y="-104.46428571428571"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="hkZ-Ad-5dJ">
@@ -380,7 +360,6 @@
         <image name="auth_screen_logo" width="60" height="60"/>
         <image name="like_button_off" width="42" height="42"/>
         <image name="tab_editorial_active" width="30" height="30"/>
-        <image name="tab_profile_active" width="75" height="49"/>
         <namedColor name="YP Black">
             <color red="0.10196078431372549" green="0.10588235294117647" blue="0.13333333333333333" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

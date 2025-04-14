@@ -81,6 +81,11 @@
 			path = ImageFeedUITests;
 			sourceTree = "<group>";
 		};
+		B8977D502DAD97EA00D605A0 /* TabBarController */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = TabBarController;
+			sourceTree = "<group>";
+		};
 		B8A4964D2D905D130096E931 /* Auth */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Auth;
@@ -142,6 +147,7 @@
 		B895D52F2D674444006C0C94 = {
 			isa = PBXGroup;
 			children = (
+				B8977D502DAD97EA00D605A0 /* TabBarController */,
 				B8A4964D2D905D130096E931 /* Auth */,
 				B88281E22D948F6900B493B3 /* AuthService */,
 				B895D53A2D674444006C0C94 /* ImageFeed */,
@@ -192,6 +198,7 @@
 			fileSystemSynchronizedGroups = (
 				B88281E22D948F6900B493B3 /* AuthService */,
 				B895D53A2D674444006C0C94 /* ImageFeed */,
+				B8977D502DAD97EA00D605A0 /* TabBarController */,
 				B8A4964D2D905D130096E931 /* Auth */,
 				B8E367B42D9486A10025D980 /* SplashViewController */,
 			);
