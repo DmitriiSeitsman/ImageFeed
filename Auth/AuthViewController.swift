@@ -5,7 +5,11 @@ protocol AuthViewControllerDelegate: AnyObject {
     func authViewController(_ vc: AuthViewController, didAuthenticateWithCode code: String)
 }
 
-final class AuthViewController: UIViewController {
+final class AuthViewController: UIViewController, AuthViewControllerDelegate {
+    func authViewController(_ vc: AuthViewController, didAuthenticateWithCode code: String) {
+        
+    }
+    
     
     private let showWebViewSegueIdentifier = "ShowWebView"
     private let oauth2Service = OAuth2Service.shared
@@ -17,6 +21,7 @@ final class AuthViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        print("AuthViewController loaded")
         configureBackButton()
     }
     
@@ -59,6 +64,8 @@ extension AuthViewController: WebViewViewControllerDelegate {
             case .success(let result):
                 DispatchQueue.main.async {
                     self?.delegate?.authViewController(self ?? AuthViewController(), didAuthenticateWithCode: code)
+                    let splashVC = SplashViewController()
+                    self?.present(splashVC, animated: true)
                 }
                 AuthViewController.dismissHUD()
                 print("Result: \(result)")
@@ -69,6 +76,7 @@ extension AuthViewController: WebViewViewControllerDelegate {
     }
     
     func webViewViewControllerDidCancel(_ vc: WebViewViewController) {
+        print("webViewViewControllerDidCancel")
         vc.dismiss(animated: true)
     }
 }
