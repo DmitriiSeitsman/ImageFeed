@@ -1,26 +1,6 @@
 import UIKit
 import Kingfisher
 
-struct UserResult: Codable {
-    let profileImage: ProfileImage?
-    
-    private enum CodingKeys: String, CodingKey {
-        case profileImage = "profile_image"
-    }
-}
-
-struct ProfileImage: Codable {
-    let small: String?
-    let medium: String?
-    let large: String?
-    
-    private enum CodingKeys: String, CodingKey {
-        case small = "small"
-        case medium = "medium"
-        case large = "large"
-    }
-}
-
 final class ProfileImageService {
     
     private(set) var avatarURL: String?
@@ -71,7 +51,7 @@ final class ProfileImageService {
         task .resume()
     }
     
-    func decodeImage(_ data: Data)  -> Result<UserResult, Error>  {
+    private func decodeImage(_ data: Data)  -> Result<UserResult, Error>  {
         let decoder = JSONDecoder()
         do {
             let decodedData = try decoder.decode(UserResult.self, from: data)
@@ -82,13 +62,7 @@ final class ProfileImageService {
         }
     }
     
-    func makeImageRequest(authToken: String?, username: String?) -> URLRequest? {
-        print("""
----> func makeImageRequest <---
-token: \(authToken ?? "NIL")
-username: \(username ?? "NIL")
--------------------------------
-""")
+    private func makeImageRequest(authToken: String?, username: String?) -> URLRequest? {
         let url = URL(string: "https://api.unsplash.com/users/\(username ?? "no username in storage")")
         var request = URLRequest(url: url!)
         if let authToken = authToken {
@@ -97,5 +71,4 @@ username: \(username ?? "NIL")
         }
         return request
     }
-
 }

@@ -1,5 +1,5 @@
 import UIKit
- 
+
 final class TabBarController: UITabBarController {
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -16,10 +16,10 @@ final class TabBarController: UITabBarController {
         
         let profileViewController = ProfileViewController()
         profileViewController.tabBarItem = UITabBarItem(
-                       title: "",
-                       image: UIImage(named: "tab_profile_active"),
-                       selectedImage: nil
-                   )
+            title: "",
+            image: UIImage(named: "tab_profile_active"),
+            selectedImage: nil
+        )
         profileViewController.view.backgroundColor = .ypBlack
         
         self.viewControllers = [imagesListViewController, profileViewController]

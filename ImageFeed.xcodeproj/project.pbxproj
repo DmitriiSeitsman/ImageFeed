@@ -16,6 +16,8 @@
 		B89D28322D73578E007E8D77 /* ImagesListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B89D28312D73578A007E8D77 /* ImagesListCell.swift */; };
 		B89D29352D764AD1007E8D77 /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B89D29342D764ACC007E8D77 /* ProfileViewController.swift */; };
 		B89D29372D77A4FA007E8D77 /* SingleImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B89D29362D77A4F6007E8D77 /* SingleImageViewController.swift */; };
+		B8E0BAB62DAEFFA6002257E0 /* ProfileImageServiceResponseBody.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8E0BAB52DAEFF93002257E0 /* ProfileImageServiceResponseBody.swift */; };
+		B8E0BAB82DAEFFE0002257E0 /* ProfileServiceResponceBody.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8E0BAB72DAEFFD4002257E0 /* ProfileServiceResponceBody.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,6 +47,8 @@
 		B89D28312D73578A007E8D77 /* ImagesListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagesListCell.swift; sourceTree = "<group>"; };
 		B89D29342D764ACC007E8D77 /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
 		B89D29362D77A4F6007E8D77 /* SingleImageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleImageViewController.swift; sourceTree = "<group>"; };
+		B8E0BAB52DAEFF93002257E0 /* ProfileImageServiceResponseBody.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileImageServiceResponseBody.swift; sourceTree = "<group>"; };
+		B8E0BAB72DAEFFD4002257E0 /* ProfileServiceResponceBody.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileServiceResponceBody.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -129,6 +133,8 @@
 		B89204AA2D7A218300B091DF /* Profile */ = {
 			isa = PBXGroup;
 			children = (
+				B8E0BAB72DAEFFD4002257E0 /* ProfileServiceResponceBody.swift */,
+				B8E0BAB52DAEFF93002257E0 /* ProfileImageServiceResponseBody.swift */,
 				B85ADA4E2DA0775500510BC0 /* ProfileImageService.swift */,
 				B83144D52DA01161000EB66D /* ProfileService.swift */,
 				B89D29342D764ACC007E8D77 /* ProfileViewController.swift */,
@@ -341,6 +347,8 @@
 				B83144D62DA01167000EB66D /* ProfileService.swift in Sources */,
 				B89D29352D764AD1007E8D77 /* ProfileViewController.swift in Sources */,
 				B89D29372D77A4FA007E8D77 /* SingleImageViewController.swift in Sources */,
+				B8E0BAB82DAEFFE0002257E0 /* ProfileServiceResponceBody.swift in Sources */,
+				B8E0BAB62DAEFFA6002257E0 /* ProfileImageServiceResponseBody.swift in Sources */,
 				B89D28252D73567F007E8D77 /* ImagesListViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

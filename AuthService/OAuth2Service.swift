@@ -6,13 +6,13 @@ enum AuthServiceError: Error {
 
 final class OAuth2Service {
     
-    private let urlSession = URLSession.shared
-    private var task: URLSessionTask?
-    private var lastCode: String?
-    
     static let shared = OAuth2Service()
     let oauth2TokenStorage = OAuth2TokenStorage()
     var OAuthToken: String?
+    
+    private let urlSession = URLSession.shared
+    private var task: URLSessionTask?
+    private var lastCode: String?
     
     init() {}
     
@@ -49,17 +49,18 @@ final class OAuth2Service {
                 switch OAuth2Service.decode(from: data) {
                 case .success(let response):
                     self.oauth2TokenStorage.token = response.accessToken
-                    print("""
->>> TOKEN SAVED <<<
-\(String(describing: self.oauth2TokenStorage.token))
-""")
                     handler(.success(response.accessToken))
                 case .failure(let error):
-                    print("56 func fetchOAuthToken error: \(String(describing: error))")
+                    print("func fetchOAuthToken error: \(String(describing: error))")
                     handler(.failure(error))
                 }
             case .failure(let error):
-                print("60 func fetchOAuthToken error: \(String(describing: error))")
+                print("func fetchOAuthToken error: \(String(describing: error))")
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Что-то пошло не так(", message: "Не удалось войти в систему", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                    UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true)
+                }
                 handler(.failure(error))
             }
         }
@@ -68,7 +69,7 @@ final class OAuth2Service {
         task .resume()
     }
     
-    func makeRequest(code: String) -> URLRequest? {
+    private func makeRequest(code: String) -> URLRequest? {
         guard let baseURL = URL(string: "https://unsplash.com") else { return nil }
         guard let url = URL(
             string: "/oauth/token"

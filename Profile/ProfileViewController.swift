@@ -7,6 +7,7 @@ final class ProfileViewController: UIViewController {
     let loginNameLabel = UILabel()
     let userNameLabel = UILabel()
     let descriptionLabel = UILabel()
+    
     private var authToken = OAuth2TokenStorage().token
     private var profileImageServiceObserver: NSObjectProtocol?
     

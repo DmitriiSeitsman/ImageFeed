@@ -1,42 +1,5 @@
 import UIKit
 
-struct ProfileResult: Codable {
-    let userID: String?
-    let username: String?
-    let firstName: String?
-    let lastName: String?
-    let bio: String?
-    let profileImage: ProfileImage?
-    
-    private enum CodingKeys: String, CodingKey {
-        case userID = "id"
-        case username = "username"
-        case firstName = "first_name"
-        case lastName = "last_name"
-        case bio = "bio"
-        case profileImage = "profile_image"
-    }
-}
-
-struct Profile {
-    let username: String
-    let firstName: String
-    let lastName: String
-    let name: String
-    let loginName: String
-    let bio: String
-    let profileImageURL: String
-    init(username: String, firstName: String, lastName: String, name: String, loginName: String, bio: String, profileImageURL: String) {
-        self.username = username
-        self.firstName = firstName
-        self.lastName = lastName
-        self.name = name
-        self.loginName = loginName
-        self.bio = bio
-        self.profileImageURL = profileImageURL
-    }
-}
-
 final class ProfileService {
     static let shared = ProfileService()
     private let urlSession = URLSession.shared
@@ -57,6 +20,7 @@ final class ProfileService {
             return
         }
         let session = URLSession.shared
+        
         let task = session.data(for: request) {result in DispatchQueue.main.async {
             switch result {
             case .success(let data):
@@ -82,7 +46,7 @@ final class ProfileService {
         task .resume()
     }
     
-    func convertStruct (profile: ProfileResult) -> Profile {
+    private func convertStruct (profile: ProfileResult) -> Profile {
         Profile(
             username: profile.username ?? "",
             firstName: profile.firstName ?? "",
@@ -94,7 +58,7 @@ final class ProfileService {
         )
     }
     
-    func decodeProfile(_ data: Data)  -> Result<ProfileResult, Error>  {
+    private func decodeProfile(_ data: Data)  -> Result<ProfileResult, Error>  {
         let decoder = JSONDecoder()
         do {
             let decodedData = try decoder.decode(ProfileResult.self, from: data)
@@ -105,7 +69,7 @@ final class ProfileService {
         }
     }
     
-    func makeProfileRequest(authToken: String?) -> URLRequest? {
+    private func makeProfileRequest(authToken: String?) -> URLRequest? {
         let url = URL(string: "https://api.unsplash.com/me")
         var request = URLRequest(url: url!)
         if let authToken = authToken {

@@ -5,17 +5,13 @@ protocol AuthViewControllerDelegate: AnyObject {
     func authViewController(_ vc: AuthViewController, didAuthenticateWithCode code: String)
 }
 
-final class AuthViewController: UIViewController, AuthViewControllerDelegate {
-    func authViewController(_ vc: AuthViewController, didAuthenticateWithCode code: String) {
-        
-    }
-    
+final class AuthViewController: UIViewController {
     
     private let showWebViewSegueIdentifier = "ShowWebView"
     private let oauth2Service = OAuth2Service.shared
     private static var window: UIWindow? {
-            return UIApplication.shared.windows.first
-        }
+        return UIApplication.shared.windows.first
+    }
     
     weak var delegate: AuthViewControllerDelegate?
     
@@ -39,12 +35,6 @@ final class AuthViewController: UIViewController, AuthViewControllerDelegate {
         }
     }
     
-    private func configureBackButton() {
-        navigationController?.navigationBar.backIndicatorImage = UIImage(named: "nav_back_button")
-        navigationController?.navigationBar.backIndicatorTransitionMaskImage = UIImage(named: "nav_back_button")
-        navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
-        navigationItem.backBarButtonItem?.tintColor = UIColor.ypBlack
-    }
     static func showHUD() {
         window?.isUserInteractionEnabled = false
         ProgressHUD.animate()
@@ -53,6 +43,14 @@ final class AuthViewController: UIViewController, AuthViewControllerDelegate {
         window?.isUserInteractionEnabled = true
         ProgressHUD.dismiss()
     }
+    
+    private func configureBackButton() {
+        navigationController?.navigationBar.backIndicatorImage = UIImage(named: "nav_back_button")
+        navigationController?.navigationBar.backIndicatorTransitionMaskImage = UIImage(named: "nav_back_button")
+        navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
+        navigationItem.backBarButtonItem?.tintColor = UIColor.ypBlack
+    }
+    
 }
 
 extension AuthViewController: WebViewViewControllerDelegate {
@@ -76,7 +74,6 @@ extension AuthViewController: WebViewViewControllerDelegate {
     }
     
     func webViewViewControllerDidCancel(_ vc: WebViewViewController) {
-        print("webViewViewControllerDidCancel")
         vc.dismiss(animated: true)
     }
 }

@@ -2,7 +2,9 @@ import UIKit
 import ProgressHUD
 
 final class SplashViewController: UIViewController {
+    
     var imageView = UIImageView()
+    
     private let ShowAuthenticationScreenSegueIdentifier = "ShowAuthenticationScreen"
     private let profileService = ProfileService.shared
     private let oauth2Service = OAuth2Service()
@@ -63,20 +65,6 @@ final class SplashViewController: UIViewController {
     }
 }
 
-//extension SplashViewController {
-//    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-//        if segue.identifier == ShowAuthenticationScreenSegueIdentifier {
-//            guard
-//                let navigationController = segue.destination as? UINavigationController,
-//                let viewController = navigationController.viewControllers[0] as? AuthViewController
-//            else { fatalError("Failed to prepare for \(ShowAuthenticationScreenSegueIdentifier)") }
-//            viewController.delegate = self
-//        } else {
-//            super.prepare(for: segue, sender: sender)
-//        }
-//    }
-//}
-
 extension SplashViewController: AuthViewControllerDelegate {
     
     func didAuthenticate(_ vc: AuthViewController) {
@@ -86,11 +74,19 @@ extension SplashViewController: AuthViewControllerDelegate {
     }
     
     func authViewController(_ vc: AuthViewController, didAuthenticateWithCode code: String) {
-        print("didAuthenticateWithCode")
         dismiss(animated: true) { [weak self] in
             guard let self = self else { return }
             self.fetchOAuthToken(code)
         }
+    }
+    
+    static func showHUD() {
+        window?.isUserInteractionEnabled = false
+        ProgressHUD.animate()
+    }
+    static func dismissHUD() {
+        window?.isUserInteractionEnabled = true
+        ProgressHUD.dismiss()
     }
     
     private func fetchProfile(_ token: String?) {
@@ -100,9 +96,7 @@ extension SplashViewController: AuthViewControllerDelegate {
             SplashViewController.dismissHUD()
             switch result {
             case .success:
-                print("BEFORE")
                 guard let self = self else { return }
-                print("AFTER")
                 self.switchToTabBarController()
             case .failure:
                 print("Ошибка получения профиля \(result)")
@@ -127,13 +121,5 @@ extension SplashViewController: AuthViewControllerDelegate {
                 break
             }
         }
-    }
-    static func showHUD() {
-        window?.isUserInteractionEnabled = false
-        ProgressHUD.animate()
-    }
-    static func dismissHUD() {
-        window?.isUserInteractionEnabled = true
-        ProgressHUD.dismiss()
     }
 }
