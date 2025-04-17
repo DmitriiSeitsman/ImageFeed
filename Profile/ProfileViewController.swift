@@ -1,18 +1,56 @@
 import UIKit
+import Kingfisher
 
 final class ProfileViewController: UIViewController {
     
-    private var imageView = UIImageView()
-    private let loginNameLabel = UILabel()
-    private let userNameLabel = UILabel()
-    private let descriptionLabel = UILabel()
+    var imageView = UIImageView()
+    let loginNameLabel = UILabel()
+    let userNameLabel = UILabel()
+    let descriptionLabel = UILabel()
+    
+    private var authToken = OAuth2TokenStorage().token
+    private var profileImageServiceObserver: NSObjectProtocol?
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        profileImageServiceObserver = NotificationCenter.default
+            .addObserver(
+                forName: ProfileImageService.didChangeNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                guard let self = self else { return }
+                self.updateAvatar()
+                self.updateProfileDetails(profile: ProfileService.shared.profile)
+            }
+        
         setupUI()
         configureuserNameLabel(userNameLabel, text: "Екатерина Новикова", fontSize: 23, color: .ypWhite)
         configureLoginNameLabel(loginNameLabel, text: "@ekaterinanovikova", fontSize: 13, color: .ypGray)
         configureDescriptionLabel(descriptionLabel, text: "Hello World!", fontSize: 13, color: .ypWhite)
+        updateAvatar()
+        updateProfileDetails(profile: ProfileService.shared.profile)
+    }
+    
+    private func updateProfileDetails(profile: Profile?) {
+        guard let profile = profile else { return }
+        print(profile)
+        DispatchQueue.main.async { [self] in
+            userNameLabel.text = "\(profile.firstName) \(profile.lastName)"
+            loginNameLabel.text = "@\(profile.username)"
+            descriptionLabel.text = profile.bio
+        }
+    }
+    
+    private func updateAvatar() {
+        guard
+            let profileImageURL = ProfileImageService.shared.avatarURL,
+            let url = URL(string: profileImageURL)
+        else { return }
+        DispatchQueue.main.async {
+            let processor = RoundCornerImageProcessor(cornerRadius: 35)
+            self.imageView.kf.setImage(with: url, placeholder: UIImage(named: "Placeholder.png"), options: [.processor(processor)])
+        }
     }
     
     private func setupUI() {
