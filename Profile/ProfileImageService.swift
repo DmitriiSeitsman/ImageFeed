@@ -24,19 +24,20 @@ final class ProfileImageService {
             return
         }
         let session = URLSession.shared
-        let task = session.data(for: request) {result in DispatchQueue.main.async {
+        let task = session.data(for: request) { [weak self] result in
+            DispatchQueue.main.async {
             switch result {
             case .success(let data):
-                switch ProfileImageService().decodeImage(data) {
+                switch ProfileImageService.shared.decodeImage(data) {
                 case .success(let response):
-                    self.avatarURL = response.profileImage?.medium
-                    let profileImageURL = self.avatarURL as Any
+                    self?.avatarURL = response.profileImage?.medium
+                    let profileImageURL = self?.avatarURL as Any
                     NotificationCenter.default
                         .post(
                             name: ProfileImageService.didChangeNotification,
                             object: self,
                             userInfo: ["URL": profileImageURL])
-                    completion(.success(String(describing: self.avatarURL)))
+                    completion(.success(String(describing: self?.avatarURL)))
                 case .failure(let error):
                     print("func fetchProfile error: \(String(describing: error))")
                     completion(.failure(error))

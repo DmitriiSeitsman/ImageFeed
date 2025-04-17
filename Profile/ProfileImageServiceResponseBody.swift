@@ -1,6 +1,6 @@
 import Foundation
 
-struct UserResult: Codable {
+struct UserResult: Decodable {
     let profileImage: ProfileImage?
     
     private enum CodingKeys: String, CodingKey {
@@ -8,7 +8,7 @@ struct UserResult: Codable {
     }
 }
 
-struct ProfileImage: Codable {
+struct ProfileImage: Decodable {
     let small: String?
     let medium: String?
     let large: String?

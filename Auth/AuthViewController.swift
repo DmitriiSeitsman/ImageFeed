@@ -10,7 +10,7 @@ final class AuthViewController: UIViewController {
     private let showWebViewSegueIdentifier = "ShowWebView"
     private let oauth2Service = OAuth2Service.shared
     private static var window: UIWindow? {
-        return UIApplication.shared.windows.first
+        UIApplication.shared.windows.first
     }
     
     weak var delegate: AuthViewControllerDelegate?
@@ -39,6 +39,7 @@ final class AuthViewController: UIViewController {
         window?.isUserInteractionEnabled = false
         ProgressHUD.animate()
     }
+    
     static func dismissHUD() {
         window?.isUserInteractionEnabled = true
         ProgressHUD.dismiss()
@@ -66,7 +67,6 @@ extension AuthViewController: WebViewViewControllerDelegate {
                     self?.present(splashVC, animated: true)
                 }
                 AuthViewController.dismissHUD()
-                print("Result: \(result)")
             case .failure(let error):
                 print("Error fetching token: \(error)")
             }

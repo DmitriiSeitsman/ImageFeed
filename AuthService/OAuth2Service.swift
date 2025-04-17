@@ -43,12 +43,13 @@ final class OAuth2Service {
             return
         }
         let session = URLSession.shared
-        let task = session.data(for: request) {result in DispatchQueue.main.async {
+        let task = session.data(for: request) {[weak self] result in
+            DispatchQueue.main.async {
             switch result {
             case .success(let data):
                 switch OAuth2Service.decode(from: data) {
                 case .success(let response):
-                    self.oauth2TokenStorage.token = response.accessToken
+                    self?.oauth2TokenStorage.token = response.accessToken
                     handler(.success(response.accessToken))
                 case .failure(let error):
                     print("func fetchOAuthToken error: \(String(describing: error))")

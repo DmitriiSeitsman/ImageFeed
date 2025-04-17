@@ -21,16 +21,16 @@ final class ProfileService {
         }
         let session = URLSession.shared
         
-        let task = session.data(for: request) {result in DispatchQueue.main.async {
+        let task = session.data(for: request) { [weak self] result in
+            DispatchQueue.main.async {
             switch result {
             case .success(let data):
                 switch ProfileService().decodeProfile(data) {
                 case .success(let response):
-                    self.usernameInStorage = response.username ?? ""
+                    self?.usernameInStorage = response.username ?? ""
                     let result = ProfileService().convertStruct(profile: response)
-                    self.profile = result
-                    print(self.profile ?? "NO INFO in Struct")
-                    ProfileImageService.shared.fetchProfileImageURL(authToken: authToken, username: self.usernameInStorage) { _ in }
+                    self?.profile = result
+                    ProfileImageService.shared.fetchProfileImageURL(authToken: authToken, username: self?.usernameInStorage) { _ in }
                     completion(.success(result))
                 case .failure(let error):
                     print("func fetchProfile error: \(String(describing: error))")
