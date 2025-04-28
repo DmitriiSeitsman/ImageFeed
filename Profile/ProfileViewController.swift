@@ -9,6 +9,7 @@ final class ProfileViewController: UIViewController {
     let descriptionLabel = UILabel()
     
     private var authToken = OAuth2TokenStorage().token
+    private var usernameInStorage = OAuth2TokenStorage().username
     private var profileImageServiceObserver: NSObjectProtocol?
     
     override func viewDidLoad() {
@@ -29,12 +30,12 @@ final class ProfileViewController: UIViewController {
         configureLoginNameLabel(loginNameLabel, text: "@ekaterinanovikova", fontSize: 13, color: .ypGray)
         configureDescriptionLabel(descriptionLabel, text: "Hello World!", fontSize: 13, color: .ypWhite)
         updateAvatar()
+
         updateProfileDetails(profile: ProfileService.shared.profile)
     }
     
     private func updateProfileDetails(profile: Profile?) {
         guard let profile = profile else { return }
-        print(profile)
         DispatchQueue.main.async { [self] in
             userNameLabel.text = "\(profile.firstName) \(profile.lastName)"
             loginNameLabel.text = "@\(profile.username)"

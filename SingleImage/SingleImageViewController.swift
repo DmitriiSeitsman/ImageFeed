@@ -1,4 +1,5 @@
 import UIKit
+import Kingfisher
 
 final class SingleImageViewController: UIViewController {
         
@@ -7,14 +8,16 @@ final class SingleImageViewController: UIViewController {
     
     var image: UIImage? {
         didSet {
-            guard isViewLoaded, let image else { return }
-
-            imageView.image = image
+            guard isViewLoaded, let url else { return }
+            imageView.kf.setImage(with: url)
+            guard let image = imageView.image else { return }
             imageView.frame.size = image.size
             rescaleAndCenterImageInScrollView(image: image)
         }
     }
 
+    var url: URL?
+    
     private var scrollViewVisibleSize: CGSize {
         let contentInset = scrollView.contentInset
         let scrollViewSize = scrollView.bounds.standardized.size
@@ -34,8 +37,9 @@ final class SingleImageViewController: UIViewController {
         scrollView.minimumZoomScale = 0.1
         scrollView.maximumZoomScale = 1.25
         
-        guard let image else { return }
-        imageView.image = image
+        guard let url else { return }
+        imageView.kf.setImage(with: url)
+        guard let image = imageView.image else { return }
         imageView.frame.size = image.size
         rescaleAndCenterImageInScrollView(image: image)
     }

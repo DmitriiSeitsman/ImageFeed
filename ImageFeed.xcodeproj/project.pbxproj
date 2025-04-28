@@ -62,6 +62,11 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		B881CFB82DB19B9000784E2D /* ImagesListService */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ImagesListService;
+			sourceTree = "<group>";
+		};
 		B88281E22D948F6900B493B3 /* AuthService */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = AuthService;
@@ -153,17 +158,18 @@
 		B895D52F2D674444006C0C94 = {
 			isa = PBXGroup;
 			children = (
-				B8977D502DAD97EA00D605A0 /* TabBarController */,
 				B8A4964D2D905D130096E931 /* Auth */,
 				B88281E22D948F6900B493B3 /* AuthService */,
 				B895D53A2D674444006C0C94 /* ImageFeed */,
 				B895D5512D674445006C0C94 /* ImageFeedTests */,
 				B895D55B2D674445006C0C94 /* ImageFeedUITests */,
 				B89D28332D7357C4007E8D77 /* ImagesList */,
+				B881CFB82DB19B9000784E2D /* ImagesListService */,
 				B895D5392D674444006C0C94 /* Products */,
 				B89204AA2D7A218300B091DF /* Profile */,
 				B89204AB2D7A219400B091DF /* SingleImage */,
 				B8E367B42D9486A10025D980 /* SplashViewController */,
+				B8977D502DAD97EA00D605A0 /* TabBarController */,
 			);
 			sourceTree = "<group>";
 		};
@@ -202,6 +208,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				B881CFB82DB19B9000784E2D /* ImagesListService */,
 				B88281E22D948F6900B493B3 /* AuthService */,
 				B895D53A2D674444006C0C94 /* ImageFeed */,
 				B8977D502DAD97EA00D605A0 /* TabBarController */,

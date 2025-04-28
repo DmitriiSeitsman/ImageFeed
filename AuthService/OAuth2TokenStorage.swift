@@ -26,12 +26,12 @@ final class OAuth2TokenStorage {
         }
     }
     
-    var username: String {
+    var username: String? {
         get {
-            KeychainWrapper.standard.string(forKey: keyUsername) ?? "nil"
+            KeychainWrapper.standard.string(forKey: keyUsername) ?? "NO USERNAME IN STORAGE"
         }
         set {
-            KeychainWrapper.standard.set(newValue, forKey: keyUsername)
+            KeychainWrapper.standard.set(newValue ?? "unable to save username", forKey: keyUsername)
             let isSet = KeychainWrapper.standard.string(forKey: keyUsername) != nil
             guard isSet else {
                 DispatchQueue.main.async {

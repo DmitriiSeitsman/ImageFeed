@@ -18,6 +18,7 @@ final class ProfileImageService {
               let username = username  else {
             return
         }
+
         guard let request = makeImageRequest(authToken: authToken, username: username) else {
             print("func fetchProfileImageURL: Request failed")
             completion(.failure(AuthServiceError.invalidRequest))
