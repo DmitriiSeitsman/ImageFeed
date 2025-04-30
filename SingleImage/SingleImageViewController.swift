@@ -1,5 +1,6 @@
 import UIKit
 import Kingfisher
+import ProgressHUD
 
 final class SingleImageViewController: UIViewController {
         
@@ -37,8 +38,25 @@ final class SingleImageViewController: UIViewController {
         scrollView.minimumZoomScale = 0.1
         scrollView.maximumZoomScale = 1.25
         
+        setPlaceholderImage()
+        
         guard let url else { return }
-        imageView.kf.setImage(with: url)
+        imageView.kf.setImage(with: url) { result in
+            switch result {
+            case .success(let value):
+                print("Task done for \(value.source.url!)")
+                self.imageView.subviews.last?.removeFromSuperview()
+                ProgressHUD.dismiss()
+
+            case .failure(let error):
+                print("Job failed: \(error.localizedDescription)")
+                DispatchQueue.main.async {
+                    let alertController = UIAlertController(title: "Ошибка", message: "не удалось загрузить картинку", preferredStyle: .alert)
+                    self.present(alertController, animated: true)
+                }
+            }
+        }
+    
         guard let image = imageView.image else { return }
         imageView.frame.size = image.size
         rescaleAndCenterImageInScrollView(image: image)
@@ -46,6 +64,20 @@ final class SingleImageViewController: UIViewController {
     
     func scrollViewDidZoom(_ scrollView: UIScrollView) {
         centerScrollViewContents()
+    }
+    
+    private func setPlaceholderImage() {
+        ProgressHUD.animate()
+        
+        let placeholderImage = UIImage(named: "table_view_placeholder")
+        let placeholderUI = UIImageView(image: placeholderImage)
+        placeholderUI.translatesAutoresizingMaskIntoConstraints = false
+        imageView.addSubview(placeholderUI)
+        
+        NSLayoutConstraint.activate([
+            placeholderUI.centerXAnchor.constraint(equalTo: imageView.centerXAnchor),
+            placeholderUI.centerYAnchor.constraint(equalTo: imageView.centerYAnchor),
+        ])
     }
     
     private func rescaleAndCenterImageInScrollView(image: UIImage) {

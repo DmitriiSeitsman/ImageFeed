@@ -7,6 +7,14 @@
 
 import Testing
 @testable import ImageFeed
+import XCTest
+
+final class ImagesListServiceTest: XCTestCase {
+  func testExample() {
+        
+    }
+    
+}
 
 struct ImageFeedTests {
 

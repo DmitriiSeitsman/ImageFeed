@@ -12,6 +12,7 @@
 		B83144D62DA01167000EB66D /* ProfileService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B83144D52DA01161000EB66D /* ProfileService.swift */; };
 		B84CEFD72D9C675700C7F249 /* ProgressHUD in Frameworks */ = {isa = PBXBuildFile; productRef = B84CEFD62D9C675700C7F249 /* ProgressHUD */; };
 		B85ADA4F2DA0775A00510BC0 /* ProfileImageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B85ADA4E2DA0775500510BC0 /* ProfileImageService.swift */; };
+		B86246FF2DC169910086F847 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B86246FE2DC169910086F847 /* WebKit.framework */; };
 		B89D28252D73567F007E8D77 /* ImagesListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B89D281D2D73567F007E8D77 /* ImagesListViewController.swift */; };
 		B89D28322D73578E007E8D77 /* ImagesListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B89D28312D73578A007E8D77 /* ImagesListCell.swift */; };
 		B89D29352D764AD1007E8D77 /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B89D29342D764ACC007E8D77 /* ProfileViewController.swift */; };
@@ -40,6 +41,7 @@
 /* Begin PBXFileReference section */
 		B83144D52DA01161000EB66D /* ProfileService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileService.swift; sourceTree = "<group>"; };
 		B85ADA4E2DA0775500510BC0 /* ProfileImageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileImageService.swift; sourceTree = "<group>"; };
+		B86246FE2DC169910086F847 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		B895D5382D674444006C0C94 /* ImageFeed.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ImageFeed.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B895D54E2D674445006C0C94 /* ImageFeedTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ImageFeedTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B895D5582D674445006C0C94 /* ImageFeedUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ImageFeedUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -114,6 +116,7 @@
 			files = (
 				B815E1152DAD7E1400CED262 /* Kingfisher in Frameworks */,
 				B84CEFD72D9C675700C7F249 /* ProgressHUD in Frameworks */,
+				B86246FF2DC169910086F847 /* WebKit.framework in Frameworks */,
 				B815E1182DAD8E0800CED262 /* SwiftKeychainWrapper in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -135,6 +138,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B86246FD2DC169910086F847 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B86246FE2DC169910086F847 /* WebKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		B89204AA2D7A218300B091DF /* Profile */ = {
 			isa = PBXGroup;
 			children = (
@@ -170,6 +181,7 @@
 				B89204AB2D7A219400B091DF /* SingleImage */,
 				B8E367B42D9486A10025D980 /* SplashViewController */,
 				B8977D502DAD97EA00D605A0 /* TabBarController */,
+				B86246FD2DC169910086F847 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};

@@ -1,8 +1,10 @@
 import UIKit
 
 final class ImagesListService {
+    static let didChangeNotification = Notification.Name(rawValue: "ImagesListServiceDidChange")
+    
     private let urlSession = URLSession.shared
-    private var task: URLSessionTask?
+    var task: URLSessionTask?
     var photosFull: [Photo] = []
     private let tokenInStorage = OAuth2TokenStorage().token
     private var lastLoadedPage = 1
