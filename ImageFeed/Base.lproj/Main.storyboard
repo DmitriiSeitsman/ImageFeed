@@ -42,6 +42,9 @@
                                                     <rect key="frame" x="331" y="11" width="44" height="44"/>
                                                     <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                                     <state key="normal" image="like_button_off"/>
+                                                    <connections>
+                                                        <action selector="changeLikeButton:" destination="uNV-pu-xso" eventType="touchUpInside" id="f2b-s3-iFB"/>
+                                                    </connections>
                                                 </button>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="dateLabel" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fak-03-E85" userLabel="Date Label">
                                                     <rect key="frame" x="24" y="172" width="60" height="16"/>

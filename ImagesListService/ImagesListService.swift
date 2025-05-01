@@ -62,6 +62,54 @@ final class ImagesListService {
         )
     }
     
+    func changeLike(photoId: String, isLike: Bool, _ completion: @escaping (Result<Void, Error>) -> Void) {
+        if isLike == true {
+            guard task == nil, let request = likeOff(authToken: tokenInStorage, photoId: photoId) else {
+                print(">>> UNABLE TO MAKE LIKE REQUEST <<<")
+                return
+            }
+            
+            let session = URLSession.shared
+            let task = session.data(for: request) {[weak self] success in
+                DispatchQueue.main.async {
+                    switch success {
+                    case .success(let success):
+                        print(self?.photosFull as Any)
+                        self?.changePhotoInArray(photoId: photoId)
+                        print(self?.photosFull as Any)
+                    case .failure(let error):
+                        print(">>> LIKE REQUEST RETURNED ERROR: \(error) <<<")
+                        //запрос неудачно
+                    }
+                }
+                self?.task = nil
+            }
+            self.task = task
+            task .resume()
+        } else {
+            
+            guard task == nil, let request = likeOn(authToken: tokenInStorage, photoId: photoId) else {
+                print(">>> UNABLE TO MAKE LIKE REQUEST <<<")
+                return
+            }
+            
+            let session = URLSession.shared
+            let task = session.data(for: request) {[weak self] success in
+                DispatchQueue.main.async {
+                    switch success {
+                    case .success(let success):
+                        self?.changePhotoInArray(photoId: photoId)
+                    case .failure(let error):
+                        print(">>> LIKE REQUEST RETURNED ERROR: \(error) <<<")
+                    }
+                }
+                self?.task = nil
+            }
+            self.task = task
+            task .resume()
+        }
+    }
+    
     private func decodePhotos(_ data: Data)  -> Result<[photoPackResponse], Error>  {
         let decoder = JSONDecoder()
         do {
@@ -70,6 +118,31 @@ final class ImagesListService {
         } catch {
             print("-->UNABLE TO PARSE IMAGE FROM JSON<--")
             return .failure(error)
+        }
+    }
+    
+    private func changePhotoInArray(photoId: String) {
+        DispatchQueue.main.async {
+            if let index = self.photosFull.firstIndex(where: { $0.id == photoId }) {
+
+               let photo = self.photosFull[index]
+                print("------------LIKE STATUS ID:", photo)
+                let newPhoto: [Photo] = [Photo(
+                        id: photo.id,
+                        size: photo.size,
+                        createdAt: photo.createdAt,
+                        welcomeDescription: photo.welcomeDescription,
+                        thumbImageURL: photo.thumbImageURL,
+                        largeImageURL: photo.largeImageURL,
+                        isLiked: !photo.isLiked
+                    )]
+print("----------------NEW PHOTO:", newPhoto)
+                self.photosFull.remove(at: index)
+                self.photosFull.insert(contentsOf: newPhoto, at: index)
+                print("LIKE STATUS","ID:", photo.id, photo.isLiked)
+                print(self.photosFull[index].id, self.photosFull[index].isLiked)
+            }
+            
         }
     }
     
@@ -82,6 +155,26 @@ final class ImagesListService {
         var request = URLRequest(url: url)
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
+        return request
+    }
+    
+    private func likeOn(authToken: String?, photoId: String) -> URLRequest? {
+        let url = URL(string: "https://api.unsplash.com/photos/\(photoId)/like")
+        var request = URLRequest(url: url!)
+        if let authToken = authToken {
+            request.httpMethod = "POST"
+            request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        }
+        return request
+    }
+    
+    private func likeOff(authToken: String?, photoId: String) -> URLRequest? {
+        let url = URL(string: "https://api.unsplash.com/photos/\(photoId)/like")
+        var request = URLRequest(url: url!)
+        if let authToken = authToken {
+            request.httpMethod = "DELETE"
+            request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        }
         return request
     }
     

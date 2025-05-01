@@ -1,6 +1,7 @@
 import UIKit
 import Kingfisher
 
+
 final class ImagesListViewController: UIViewController {
     
     @IBOutlet weak var dateLabel: UILabel!
@@ -10,14 +11,13 @@ final class ImagesListViewController: UIViewController {
     private var photosServiceObserver: NSObjectProtocol?
     private let showSingleImageSegueIdentifier = "ShowSingleImage"
     private let imagesListService = ImagesListService()
+    private var wasLiked: Bool = false
     private lazy var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "dd MMMM yyyy"
         formatter.locale = Locale(identifier: "ru_RU")
         return formatter
     }()
-    
-    private var task: URLSessionTask? = ImagesListService().task
     
     override func viewDidLoad() {
         
@@ -51,6 +51,8 @@ final class ImagesListViewController: UIViewController {
         let url = URL(string: String(image.largeImageURL))
         viewController.url = url
     }
+    
+    
 }
 
 extension ImagesListViewController: UITableViewDelegate {
@@ -80,6 +82,7 @@ extension ImagesListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         performSegue(withIdentifier: showSingleImageSegueIdentifier, sender: indexPath)
     }
+    
     
     private func loadPhotos() {
         print("START LOADING PHOTOS")
@@ -136,12 +139,14 @@ extension ImagesListViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: ImagesListCell.reuseIdentifier, for: indexPath)
         
+        let cell = tableView.dequeueReusableCell(withIdentifier: ImagesListCell.reuseIdentifier, for: indexPath)
+        //cell.delegate = self
         guard let imageListCell = cell as? ImagesListCell else {
             return UITableViewCell()
         }
         configCell(for: imageListCell, with: indexPath)
+        imageListCell.delegate = self
         return imageListCell
     }
     
@@ -173,8 +178,67 @@ extension ImagesListViewController: UITableViewDataSource {
         guard let date = image.createdAt as Date? else { return }
         cell.dateLabel.text = dateFormatter.string(from: date)
         
-        let isLiked = indexPath.row % 2 == 0
+        let isLiked = image.isLiked
         let likeImage = isLiked ? UIImage(named: "like_button_on") : UIImage(named: "like_button_off")
         cell.likeButton.setImage(likeImage, for: .normal)
     }
+    
+}
+
+extension ImagesListViewController: ImagesListCellDelegate {
+    func imageListCellDidTapLike(_ cell: ImagesListCell) {
+        guard let indexPath = tableView.indexPath(for: cell) else { return }
+        let photo = imagesListService.photosFull[indexPath.row]
+        let like = photo.isLiked
+        
+        if like == true {
+            print("Was Liked")
+            wasLiked = true
+        } else {
+            print("Was Not Liked")
+            wasLiked = false
+        }
+        
+        print(photo.id, "IS LIKED: \(like)")
+        
+        imagesListService.changeLike(photoId: photo.id, isLike: like) { [weak self] success in
+            
+            switch success {
+            case .success:
+                DispatchQueue.main.async {
+                    if self?.wasLiked == true {
+                        let likeImage = UIImage(named: "like_button_off")
+                        cell.likeButton.setImage(likeImage, for: .normal)
+                    } else {
+                        let likeImage = UIImage(named: "like_button_on")
+                        cell.likeButton.setImage(likeImage, for: .normal)
+                    }
+                }
+                print("SUCCESSFULLY LIKED")
+            case .failure:
+                print("Лайк не поставлен")
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Ошибка", message: "Не удалось получить данные профиля", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                    UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true)
+                }
+                break
+            }
+        }
+                if wasLiked != like {
+                    if self.wasLiked == true {
+                        let likeImage = UIImage(named: "like_button_off")
+                        cell.likeButton.setImage(likeImage, for: .normal)
+                    } else {
+                        let likeImage = UIImage(named: "like_button_on")
+                        cell.likeButton.setImage(likeImage, for: .normal)
+                    }
+                    print("LIKE CHANGED")
+                } else {
+                    print("LIKE NOT CHANGED")
+                }
+        let newLike = photo.isLiked
+        print(photo.id, "IS LIKED: \(newLike)")
+    }
+
 }

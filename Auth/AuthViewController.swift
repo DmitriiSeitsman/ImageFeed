@@ -60,7 +60,7 @@ extension AuthViewController: WebViewViewControllerDelegate {
         AuthViewController.showHUD()
         oauth2Service.fetchOAuthToken(code: code) { [weak self] token in
             switch token {
-            case .success(let result):
+            case .success(_):
                 DispatchQueue.main.async {
                     self?.delegate?.authViewController(self ?? AuthViewController(), didAuthenticateWithCode: code)
                     let splashVC = SplashViewController()
