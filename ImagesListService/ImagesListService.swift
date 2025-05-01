@@ -73,7 +73,7 @@ final class ImagesListService {
             let task = session.data(for: request) {[weak self] success in
                 DispatchQueue.main.async {
                     switch success {
-                    case .success(let success):
+                    case .success(_):
                         print(self?.photosFull as Any)
                         self?.changePhotoInArray(photoId: photoId)
                         print(self?.photosFull as Any)
