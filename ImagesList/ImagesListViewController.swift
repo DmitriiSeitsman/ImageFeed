@@ -31,7 +31,6 @@ final class ImagesListViewController: UIViewController {
                 guard let self = self else { return }
                 guard let arrayCount = arrayCount.userInfo?.values.first else { return }
                 var arrayCountUnwrapped: [Photo] = arrayCount as! [Photo]
-                print("==========UNWRAPPED ARRAY==========: \(arrayCountUnwrapped)")
                 updateTableViewAnimated(photos: &arrayCountUnwrapped)
             }
         tableView.reloadData()
@@ -58,16 +57,12 @@ final class ImagesListViewController: UIViewController {
 extension ImagesListViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        //        if imagesListService.photosFull.isEmpty {
-        //            return 250
-        //        } else {
         let imageInsets = UIEdgeInsets(top: 4, left: 16, bottom: 4, right: 16)
         let imageViewWidth = tableView.bounds.width - imageInsets.left - imageInsets.right
         let imageWidth = imagesListService.photosFull[indexPath.row].size.width
         let scale = imageViewWidth / imageWidth
         let cellHeight = imagesListService.photosFull[indexPath.row].size.height * scale + imageInsets.top + imageInsets.bottom
         return cellHeight
-        //        }
     }
     
     private func resize ( _ tableView: UITableView, indexPath: IndexPath) -> CGSize {
@@ -113,11 +108,7 @@ extension ImagesListViewController: UITableViewDelegate {
 
 extension ImagesListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        //        if imagesListService.photosFull.isEmpty {
-        //            return 5
-        //        } else {
         return imagesListService.photosFull.count
-        //        }
     }
     
     func updateTableViewAnimated(photos: inout Array<Photo>) {
@@ -141,7 +132,6 @@ extension ImagesListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: ImagesListCell.reuseIdentifier, for: indexPath)
-        //cell.delegate = self
         guard let imageListCell = cell as? ImagesListCell else {
             return UITableViewCell()
         }
@@ -193,52 +183,41 @@ extension ImagesListViewController: ImagesListCellDelegate {
         
         if like == true {
             print("Was Liked")
+            let likeImage = UIImage(named: "like_button_off")
+            cell.likeButton.setImage(likeImage, for: .normal)
             wasLiked = true
         } else {
             print("Was Not Liked")
+            let likeImage = UIImage(named: "like_button_on")
+            cell.likeButton.setImage(likeImage, for: .normal)
             wasLiked = false
         }
+        cell.likeButton.isUserInteractionEnabled = false
         
-        print(photo.id, "IS LIKED: \(like)")
-        
-        imagesListService.changeLike(photoId: photo.id, isLike: like) { [weak self] success in
-            
-            switch success {
-            case .success:
+        imagesListService.changeLike(photoId: photo.id, isLike: like) { response in
+            switch response {
+            case .success(_):
+                print("LIKE CHANGED")
+                cell.likeButton.isUserInteractionEnabled = true
+            case .failure(let error):
                 DispatchQueue.main.async {
-                    if self?.wasLiked == true {
-                        let likeImage = UIImage(named: "like_button_off")
-                        cell.likeButton.setImage(likeImage, for: .normal)
-                    } else {
-                        let likeImage = UIImage(named: "like_button_on")
-                        cell.likeButton.setImage(likeImage, for: .normal)
-                    }
-                }
-                print("SUCCESSFULLY LIKED")
-            case .failure:
-                print("Лайк не поставлен")
-                DispatchQueue.main.async {
-                    let alert = UIAlertController(title: "Ошибка", message: "Не удалось получить данные профиля", preferredStyle: .alert)
+                    let alert = UIAlertController(title: "Ошибка", message: "Не удалось изменить лайк", preferredStyle: .alert)
                     alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
                     UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true)
                 }
-                break
+                print("LIKE WAS NOT CHANGED, REASON:", error)
+                if self.wasLiked == true {
+                    let likeImage = UIImage(named: "like_button_off")
+                    cell.likeButton.setImage(likeImage, for: .normal)
+                } else {
+                    let likeImage = UIImage(named: "like_button_on")
+                    cell.likeButton.setImage(likeImage, for: .normal)
+                }
+
+                cell.likeButton.isUserInteractionEnabled = true
             }
         }
-                if wasLiked != like {
-                    if self.wasLiked == true {
-                        let likeImage = UIImage(named: "like_button_off")
-                        cell.likeButton.setImage(likeImage, for: .normal)
-                    } else {
-                        let likeImage = UIImage(named: "like_button_on")
-                        cell.likeButton.setImage(likeImage, for: .normal)
-                    }
-                    print("LIKE CHANGED")
-                } else {
-                    print("LIKE NOT CHANGED")
-                }
-        let newLike = photo.isLiked
-        print(photo.id, "IS LIKED: \(newLike)")
+        cell.likeButton.isUserInteractionEnabled = true
     }
-
+    
 }

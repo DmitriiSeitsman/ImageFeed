@@ -62,48 +62,53 @@ final class ImagesListService {
         )
     }
     
-    func changeLike(photoId: String, isLike: Bool, _ completion: @escaping (Result<Void, Error>) -> Void) {
+    func changeLike(photoId: String, isLike: Bool, _ handler: @escaping (Swift.Result<[Photo], Error>) -> Void) {
+        guard task == nil else {
+            print("TASK IS ACTIVE")
+            task?.cancel()
+            return
+        }
         if isLike == true {
-            guard task == nil, let request = likeOff(authToken: tokenInStorage, photoId: photoId) else {
+            guard let request = likeOff(authToken: tokenInStorage, photoId: photoId) else {
                 print(">>> UNABLE TO MAKE LIKE REQUEST <<<")
                 return
             }
             
             let session = URLSession.shared
-            let task = session.data(for: request) {[weak self] success in
+            let task = session.data(for: request) {[weak self] result in
                 DispatchQueue.main.async {
-                    switch success {
+                    switch result {
                     case .success(_):
-                        print(self?.photosFull as Any)
                         self?.changePhotoInArray(photoId: photoId)
-                        print(self?.photosFull as Any)
+                        handler(.success(self?.photosFull ?? []))
                     case .failure(let error):
-                        print(">>> LIKE REQUEST RETURNED ERROR: \(error) <<<")
-                        //запрос неудачно
+                        print("ERROR AFTER REQUEST")
+                        handler(.failure(error))
                     }
                 }
-                self?.task = nil
+                
             }
             self.task = task
             task .resume()
         } else {
             
-            guard task == nil, let request = likeOn(authToken: tokenInStorage, photoId: photoId) else {
+            guard let request = likeOn(authToken: tokenInStorage, photoId: photoId) else {
                 print(">>> UNABLE TO MAKE LIKE REQUEST <<<")
                 return
             }
             
             let session = URLSession.shared
-            let task = session.data(for: request) {[weak self] success in
+            let task = session.data(for: request) {[weak self] result in
                 DispatchQueue.main.async {
-                    switch success {
-                    case .success(let success):
+                    switch result {
+                    case .success(_):
                         self?.changePhotoInArray(photoId: photoId)
+                        handler(.success(self?.photosFull ?? []))
                     case .failure(let error):
-                        print(">>> LIKE REQUEST RETURNED ERROR: \(error) <<<")
+                        print("ERROR AFTER REQUEST")
+                        handler(.failure(error))
                     }
                 }
-                self?.task = nil
             }
             self.task = task
             task .resume()
@@ -121,22 +126,22 @@ final class ImagesListService {
         }
     }
     
-    private func changePhotoInArray(photoId: String) {
+    private func changePhotoInArray(photoId: String) -> [Photo] {
         DispatchQueue.main.async {
             if let index = self.photosFull.firstIndex(where: { $0.id == photoId }) {
-
-               let photo = self.photosFull[index]
+                
+                let photo = self.photosFull[index]
                 print("------------LIKE STATUS ID:", photo)
                 let newPhoto: [Photo] = [Photo(
-                        id: photo.id,
-                        size: photo.size,
-                        createdAt: photo.createdAt,
-                        welcomeDescription: photo.welcomeDescription,
-                        thumbImageURL: photo.thumbImageURL,
-                        largeImageURL: photo.largeImageURL,
-                        isLiked: !photo.isLiked
-                    )]
-print("----------------NEW PHOTO:", newPhoto)
+                    id: photo.id,
+                    size: photo.size,
+                    createdAt: photo.createdAt,
+                    welcomeDescription: photo.welcomeDescription,
+                    thumbImageURL: photo.thumbImageURL,
+                    largeImageURL: photo.largeImageURL,
+                    isLiked: !photo.isLiked
+                )]
+                print("----------------NEW PHOTO:", newPhoto)
                 self.photosFull.remove(at: index)
                 self.photosFull.insert(contentsOf: newPhoto, at: index)
                 print("LIKE STATUS","ID:", photo.id, photo.isLiked)
@@ -144,6 +149,7 @@ print("----------------NEW PHOTO:", newPhoto)
             }
             
         }
+        return photosFull
     }
     
     private func makePhotosRequest() -> URLRequest? {
