@@ -1,4 +1,6 @@
 import UIKit
+import Kingfisher
+import ProgressHUD
 
 final class SingleImageViewController: UIViewController {
         
@@ -7,14 +9,16 @@ final class SingleImageViewController: UIViewController {
     
     var image: UIImage? {
         didSet {
-            guard isViewLoaded, let image else { return }
-
-            imageView.image = image
+            guard isViewLoaded, let url else { return }
+            imageView.kf.setImage(with: url)
+            guard let image = imageView.image else { return }
             imageView.frame.size = image.size
             rescaleAndCenterImageInScrollView(image: image)
         }
     }
 
+    var url: URL?
+    
     private var scrollViewVisibleSize: CGSize {
         let contentInset = scrollView.contentInset
         let scrollViewSize = scrollView.bounds.standardized.size
@@ -34,14 +38,47 @@ final class SingleImageViewController: UIViewController {
         scrollView.minimumZoomScale = 0.1
         scrollView.maximumZoomScale = 1.25
         
-        guard let image else { return }
-        imageView.image = image
+        setPlaceholderImage()
+        
+        guard let url else { return }
+        imageView.kf.setImage(with: url) { result in
+            switch result {
+            case .success(let value):
+                print("Task done for \(value.source.url!)")
+                self.imageView.subviews.last?.removeFromSuperview()
+                ProgressHUD.dismiss()
+
+            case .failure(let error):
+                print("Job failed: \(error.localizedDescription)")
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Ошибка", message: "Не удалось загрузить изображение", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                    UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true)
+                }
+            }
+        }
+    
+        guard let image = imageView.image else { return }
         imageView.frame.size = image.size
         rescaleAndCenterImageInScrollView(image: image)
     }
     
     func scrollViewDidZoom(_ scrollView: UIScrollView) {
         centerScrollViewContents()
+    }
+    
+    private func setPlaceholderImage() {
+        ProgressHUD.animate()
+        
+        let placeholderImage = UIImage(named: "table_view_placeholder")
+        let placeholderUI = UIImageView(image: placeholderImage)
+        placeholderUI.translatesAutoresizingMaskIntoConstraints = false
+        imageView.addSubview(placeholderUI)
+        
+        NSLayoutConstraint.activate([
+            placeholderUI.centerXAnchor.constraint(equalTo: imageView.centerXAnchor),
+            placeholderUI.centerYAnchor.constraint(equalTo: imageView.centerYAnchor),
+        ])
     }
     
     private func rescaleAndCenterImageInScrollView(image: UIImage) {

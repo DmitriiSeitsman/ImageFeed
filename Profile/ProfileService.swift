@@ -30,6 +30,7 @@ final class ProfileService {
                     self?.usernameInStorage = response.username ?? ""
                     let result = ProfileService().convertStruct(profile: response)
                     self?.profile = result
+                    print("USERNAME IN STORAGE:", self?.usernameInStorage ?? "USERNAME DIDN't SAVED")
                     ProfileImageService.shared.fetchProfileImageURL(authToken: authToken, username: self?.usernameInStorage) { _ in }
                     completion(.success(result))
                 case .failure(let error):
