@@ -6,9 +6,9 @@ final class SplashViewController: UIViewController {
     private let ShowAuthenticationScreenSegueIdentifier = "ShowAuthenticationScreen"
     private let profileService = ProfileService.shared
     private let oauth2Service = OAuth2Service()
-    private let oauth2TokenStorage = OAuth2TokenStorage()
+    private let oauth2TokenStorage = OAuth2TokenStorage.shared
     private let profileViewController = ProfileViewController()
-    private var usernameInStorage = OAuth2TokenStorage().username
+    private var usernameInStorage = OAuth2TokenStorage.shared.username
     private var imageView = UIImageView()
     private static var window: UIWindow? {
         return UIApplication.shared.windows.first
@@ -23,12 +23,15 @@ final class SplashViewController: UIViewController {
             return
         } else {
             let storyboard = UIStoryboard(name: "Main", bundle: .main)
-            let viewController = storyboard.instantiateViewController(
-                withIdentifier: "navigationController"
-            )
-            viewController.navigationController?.navigationBar.isHidden = false
-            viewController.modalPresentationStyle = .fullScreen
-            present(viewController, animated: true)
+            guard let authViewController = storyboard.instantiateViewController(
+                withIdentifier: "AuthViewController"
+            ) as? AuthViewController else { return }
+            authViewController.delegate = self
+            
+            let navigationController = UINavigationController(rootViewController: authViewController)
+            navigationController.navigationBar.isHidden = false
+            navigationController.modalPresentationStyle = .fullScreen
+            present(navigationController, animated: true)
         }
     }
     
@@ -43,7 +46,7 @@ final class SplashViewController: UIViewController {
     
     private func setupUI() {
         self.view.backgroundColor = .ypBlack
-        let splashImage = UIImage(named: "splash_screen_logo")
+        let splashImage = UIImage(resource: .splashScreenLogo)
         imageView = UIImageView(image: splashImage)
         imageView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(imageView)
@@ -57,10 +60,15 @@ final class SplashViewController: UIViewController {
     }
     
     private func switchToTabBarController() {
-        guard let window = UIApplication.shared.windows.first else { assertionFailure("Invalid Configuration"); return }
-        let tabBarController = UIStoryboard(name: "Main", bundle: .main)
-            .instantiateViewController(withIdentifier: "TabBarViewController")
-        window.rootViewController = tabBarController
+        DispatchQueue.main.async {
+            guard let window = UIApplication.shared.windows.first else {
+                assertionFailure("Invalid Configuration")
+                return
+            }
+            let tabBarController = UIStoryboard(name: "Main", bundle: .main)
+                .instantiateViewController(withIdentifier: "TabBarViewController")
+            window.rootViewController = tabBarController
+        }
     }
 }
 

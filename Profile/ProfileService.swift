@@ -4,9 +4,9 @@ final class ProfileService {
     static let shared = ProfileService()
     private let urlSession = URLSession.shared
     private var task: URLSessionTask?
-    private var usernameInStorage = OAuth2TokenStorage().username
+    private var usernameInStorage = OAuth2TokenStorage.shared.username
     private let profileViewController = ProfileViewController()
-    private var authToken = OAuth2TokenStorage().token
+    private var authToken = OAuth2TokenStorage.shared.token
     private(set) var profile: Profile?
     private init() {}
     

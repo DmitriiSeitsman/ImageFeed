@@ -156,7 +156,7 @@ extension ImagesListViewController: UITableViewDataSource {
             let image = imagesListService.photosFull[indexPath.row]
             let url = URL(string: String(image.thumbImageURL))
             
-            let placeholderImage = UIImage(named: "table_view_placeholder")
+            let placeholderImage = UIImage(resource: .tableViewPlaceholder)
             cell.cellImage.contentMode = .center
             cell.cellImage.backgroundColor = .ypGray
             let size: CGSize = resize(tableView, indexPath: indexPath)
@@ -173,11 +173,8 @@ extension ImagesListViewController: UITableViewDataSource {
             
             setLikeIcon(for: cell, indexPath: indexPath)
         }
-        //if imagesListService.photosFull.isEmpty == true { return }
-        
-        
-
     }
+    
     func setLikeIcon(for cell: ImagesListCell, indexPath: IndexPath) {
         let image = imagesListService.photosFull[indexPath.row]
         let isLiked = image.isLiked
@@ -192,29 +189,23 @@ extension ImagesListViewController: ImagesListCellDelegate {
         let photo = imagesListService.photosFull[indexPath.row]
         let like = photo.isLiked
         
-        if like == true {
-            print("Was Liked")
-            let likeImage = UIImage(named: "like_button_off")
-            cell.likeButton.setImage(likeImage, for: .normal)
-        } else {
-            print("Was Not Liked")
-            let likeImage = UIImage(named: "like_button_on")
-            cell.likeButton.setImage(likeImage, for: .normal)
-        }
+        let likeImage = UIImage(resource: like ? .likeButtonOff : .likeButtonOn)
+        cell.likeButton.setImage(likeImage, for: .normal)
+        
         ProgressHUD.animate()
         cell.likeButton.isUserInteractionEnabled = false
         cell.isUserInteractionEnabled = false
         
-        imagesListService.changeLike(photoId: photo.id, isLike: like) { response in
+        imagesListService.changeLike(photoId: photo.id, isLike: like) { [weak self] response in
             switch response {
-            case .success(_):
+            case .success:
                 print("LIKE CHANGED")
                 ProgressHUD.dismiss()
                 cell.likeButton.isUserInteractionEnabled = true
                 cell.isUserInteractionEnabled = false
             case .failure(let error):
                 DispatchQueue.main.async {
-                    self.setLikeIcon(for: cell, indexPath: indexPath)
+                    self?.setLikeIcon(for: cell, indexPath: indexPath)
                     let alert = UIAlertController(title: "Ошибка", message: "Не удалось изменить лайк", preferredStyle: .alert)
                     alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
                     UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true)

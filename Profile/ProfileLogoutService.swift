@@ -3,7 +3,7 @@ import WebKit
 
 final class ProfileLogoutService {
     static let shared = ProfileLogoutService()
-    private var oAuth2TokenStorage = OAuth2TokenStorage()
+    private var oAuth2TokenStorage = OAuth2TokenStorage.shared
     
     private init() { }
     

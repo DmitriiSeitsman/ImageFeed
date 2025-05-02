@@ -7,7 +7,7 @@ final class ImagesListService {
     static let didChangeNotification = Notification.Name(rawValue: "ImagesListServiceDidChange")
     
     private let urlSession = URLSession.shared
-    private let tokenInStorage = OAuth2TokenStorage().token
+    private let tokenInStorage = OAuth2TokenStorage.shared.token
     private var lastLoadedPage = 1
     private lazy var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -22,7 +22,7 @@ final class ImagesListService {
     }
     
     func fetchPhotosNextPage(handler: @escaping (Swift.Result<[photoPackResponse], Error>) -> Void) {
-        print(task as Any)
+    
         guard task == nil, let request = makePhotosRequest() else {
             print(">>> UNABLE TO CREATE REQUEST <<<")
             handler(.failure(AuthServiceError.invalidRequest))
@@ -92,7 +92,7 @@ final class ImagesListService {
                         handler(.failure(error))
                     }
                 }
-                
+
             }
             self.task = task
             task .resume()
@@ -132,7 +132,7 @@ final class ImagesListService {
         }
     }
     
-    private func changePhotoInArray(photoId: String) -> [Photo] {
+    private func changePhotoInArray(photoId: String) {
         DispatchQueue.main.async {
             if let index = self.photosFull.firstIndex(where: { $0.id == photoId }) {
                 
@@ -155,7 +155,7 @@ final class ImagesListService {
             }
             
         }
-        return photosFull
+        return
     }
     
     private func makePhotosRequest() -> URLRequest? {

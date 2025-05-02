@@ -8,8 +8,8 @@ final class ProfileViewController: UIViewController {
     let userNameLabel = UILabel()
     let descriptionLabel = UILabel()
     
-    private var authToken = OAuth2TokenStorage().token
-    private var usernameInStorage = OAuth2TokenStorage().username
+    private var authToken = OAuth2TokenStorage.shared.token
+    private var usernameInStorage = OAuth2TokenStorage.shared.username
     private var profileImageServiceObserver: NSObjectProtocol?
     
     override func viewDidLoad() {
@@ -50,7 +50,8 @@ final class ProfileViewController: UIViewController {
         else { return }
         DispatchQueue.main.async {
             let processor = RoundCornerImageProcessor(cornerRadius: 35)
-            self.imageView.kf.setImage(with: url, placeholder: UIImage(named: "Placeholder.png"), options: [.processor(processor)])
+            self.imageView.kf.setImage(with: url, placeholder: UIImage(named: "Placeholder.png"), options: [.processor(processor)]) {_ in 
+            }
         }
     }
     
