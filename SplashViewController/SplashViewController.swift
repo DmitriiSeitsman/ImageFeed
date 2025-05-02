@@ -3,14 +3,13 @@ import ProgressHUD
 
 final class SplashViewController: UIViewController {
     
-    var imageView = UIImageView()
-    
     private let ShowAuthenticationScreenSegueIdentifier = "ShowAuthenticationScreen"
     private let profileService = ProfileService.shared
     private let oauth2Service = OAuth2Service()
     private let oauth2TokenStorage = OAuth2TokenStorage()
     private let profileViewController = ProfileViewController()
     private var usernameInStorage = OAuth2TokenStorage().username
+    private var imageView = UIImageView()
     private static var window: UIWindow? {
         return UIApplication.shared.windows.first
     }

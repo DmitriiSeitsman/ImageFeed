@@ -18,7 +18,7 @@ final class ProfileImageService {
               let username = username  else {
             return
         }
-
+        
         guard let request = makeImageRequest(authToken: authToken, username: username) else {
             print("func fetchProfileImageURL: Request failed")
             completion(.failure(AuthServiceError.invalidRequest))
@@ -27,27 +27,27 @@ final class ProfileImageService {
         let session = URLSession.shared
         let task = session.data(for: request) { [weak self] result in
             DispatchQueue.main.async {
-            switch result {
-            case .success(let data):
-                switch ProfileImageService.shared.decodeImage(data) {
-                case .success(let response):
-                    self?.avatarURL = response.profileImage?.medium
-                    let profileImageURL = self?.avatarURL as Any
-                    NotificationCenter.default
-                        .post(
-                            name: ProfileImageService.didChangeNotification,
-                            object: self,
-                            userInfo: ["URL": profileImageURL])
-                    completion(.success(String(describing: self?.avatarURL)))
+                switch result {
+                case .success(let data):
+                    switch ProfileImageService.shared.decodeImage(data) {
+                    case .success(let response):
+                        self?.avatarURL = response.profileImage?.medium
+                        let profileImageURL = self?.avatarURL as Any
+                        NotificationCenter.default
+                            .post(
+                                name: ProfileImageService.didChangeNotification,
+                                object: self,
+                                userInfo: ["URL": profileImageURL])
+                        completion(.success(String(describing: self?.avatarURL)))
+                    case .failure(let error):
+                        print("func fetchProfile error: \(String(describing: error))")
+                        completion(.failure(error))
+                    }
                 case .failure(let error):
                     print("func fetchProfile error: \(String(describing: error))")
                     completion(.failure(error))
                 }
-            case .failure(let error):
-                print("func fetchProfile error: \(String(describing: error))")
-                completion(.failure(error))
             }
-        }
         }
         self.task = task
         task .resume()

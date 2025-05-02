@@ -1,11 +1,12 @@
 import UIKit
 
 final class ImagesListService {
+    var task: URLSessionTask?
+    var photosFull: [Photo] = []
+    
     static let didChangeNotification = Notification.Name(rawValue: "ImagesListServiceDidChange")
     
     private let urlSession = URLSession.shared
-    var task: URLSessionTask?
-    var photosFull: [Photo] = []
     private let tokenInStorage = OAuth2TokenStorage().token
     private var lastLoadedPage = 1
     private lazy var dateFormatter: DateFormatter = {
@@ -136,7 +137,7 @@ final class ImagesListService {
             if let index = self.photosFull.firstIndex(where: { $0.id == photoId }) {
                 
                 let photo = self.photosFull[index]
-                print("------------LIKE STATUS ID:", photo)
+                
                 let newPhoto: [Photo] = [Photo(
                     id: photo.id,
                     size: photo.size,
@@ -146,7 +147,7 @@ final class ImagesListService {
                     largeImageURL: photo.largeImageURL,
                     isLiked: !photo.isLiked
                 )]
-                print("----------------NEW PHOTO:", newPhoto)
+                
                 self.photosFull.remove(at: index)
                 self.photosFull.insert(contentsOf: newPhoto, at: index)
                 print("LIKE STATUS","ID:", photo.id, photo.isLiked)

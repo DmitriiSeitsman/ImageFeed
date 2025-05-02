@@ -15,9 +15,6 @@ final class ProfileLogoutService {
         let splashVC = SplashViewController()
         splashVC.modalPresentationStyle = .fullScreen
         UIApplication.shared.windows.first?.rootViewController?.present(splashVC, animated: true, completion: nil)
-        
-        print("ACTUAAL TOKEN:", oAuth2TokenStorage.token ?? "NO TOKEN IN STORAGE ANYMORE")
-        print("ACTUAL USERNAME:", oAuth2TokenStorage.username ?? "NO USERNAME IN STORAGE ANYMORE")
     }
     
     private func cleanCookies() {

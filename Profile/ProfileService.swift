@@ -23,25 +23,25 @@ final class ProfileService {
         
         let task = session.data(for: request) { [weak self] result in
             DispatchQueue.main.async {
-            switch result {
-            case .success(let data):
-                switch ProfileService().decodeProfile(data) {
-                case .success(let response):
-                    self?.usernameInStorage = response.username ?? ""
-                    let result = ProfileService().convertStruct(profile: response)
-                    self?.profile = result
-                    print("USERNAME IN STORAGE:", self?.usernameInStorage ?? "USERNAME DIDN't SAVED")
-                    ProfileImageService.shared.fetchProfileImageURL(authToken: authToken, username: self?.usernameInStorage) { _ in }
-                    completion(.success(result))
+                switch result {
+                case .success(let data):
+                    switch ProfileService().decodeProfile(data) {
+                    case .success(let response):
+                        self?.usernameInStorage = response.username ?? ""
+                        let result = ProfileService().convertStruct(profile: response)
+                        self?.profile = result
+                        print("USERNAME IN STORAGE:", self?.usernameInStorage ?? "USERNAME DIDN't SAVED")
+                        ProfileImageService.shared.fetchProfileImageURL(authToken: authToken, username: self?.usernameInStorage) { _ in }
+                        completion(.success(result))
+                    case .failure(let error):
+                        print("func fetchProfile error: \(String(describing: error))")
+                        completion(.failure(error))
+                    }
                 case .failure(let error):
                     print("func fetchProfile error: \(String(describing: error))")
                     completion(.failure(error))
                 }
-            case .failure(let error):
-                print("func fetchProfile error: \(String(describing: error))")
-                completion(.failure(error))
             }
-        }
         }
         self.task = task
         task .resume()
