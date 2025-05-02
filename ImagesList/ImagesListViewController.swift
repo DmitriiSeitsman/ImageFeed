@@ -1,6 +1,6 @@
 import UIKit
 import Kingfisher
-
+import ProgressHUD
 
 final class ImagesListViewController: UIViewController {
     
@@ -11,7 +11,6 @@ final class ImagesListViewController: UIViewController {
     private var photosServiceObserver: NSObjectProtocol?
     private let showSingleImageSegueIdentifier = "ShowSingleImage"
     private let imagesListService = ImagesListService()
-    private var wasLiked: Bool = false
     private lazy var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "dd MMMM yyyy"
@@ -152,27 +151,39 @@ extension ImagesListViewController: UITableViewDataSource {
     }
     
     func configCell(for cell: ImagesListCell, with indexPath: IndexPath) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            let image = imagesListService.photosFull[indexPath.row]
+            let url = URL(string: String(image.thumbImageURL))
+            
+            let placeholderImage = UIImage(named: "table_view_placeholder")
+            cell.cellImage.contentMode = .center
+            cell.cellImage.backgroundColor = .ypGray
+            let size: CGSize = resize(tableView, indexPath: indexPath)
+            let processor = ResizingImageProcessor(referenceSize: size)
+            cell.cellImage.kf.setImage(with: url, placeholder: placeholderImage, options: [.processor(processor)])
+            
+            guard let date = image.createdAt as Date?
+            else {
+                cell.dateLabel.text = ""
+                return
+            }
+            
+            cell.dateLabel.text = dateFormatter.string(from: date)
+            
+            setLikeIcon(for: cell, indexPath: indexPath)
+        }
+        //if imagesListService.photosFull.isEmpty == true { return }
         
-        if imagesListService.photosFull.isEmpty == true { return }
         
+
+    }
+    func setLikeIcon(for cell: ImagesListCell, indexPath: IndexPath) {
         let image = imagesListService.photosFull[indexPath.row]
-        let url = URL(string: String(image.thumbImageURL))
-        
-        let placeholderImage = UIImage(named: "table_view_placeholder")
-        cell.cellImage.contentMode = .center
-        cell.cellImage.backgroundColor = .ypGray
-        let size: CGSize = resize(tableView, indexPath: indexPath)
-        let processor = ResizingImageProcessor(referenceSize: size)
-        cell.cellImage.kf.setImage(with: url, placeholder: placeholderImage, options: [.processor(processor)])
-        
-        guard let date = image.createdAt as Date? else { return }
-        cell.dateLabel.text = dateFormatter.string(from: date)
-        
         let isLiked = image.isLiked
         let likeImage = isLiked ? UIImage(named: "like_button_on") : UIImage(named: "like_button_off")
         cell.likeButton.setImage(likeImage, for: .normal)
     }
-    
 }
 
 extension ImagesListViewController: ImagesListCellDelegate {
@@ -185,39 +196,35 @@ extension ImagesListViewController: ImagesListCellDelegate {
             print("Was Liked")
             let likeImage = UIImage(named: "like_button_off")
             cell.likeButton.setImage(likeImage, for: .normal)
-            wasLiked = true
         } else {
             print("Was Not Liked")
             let likeImage = UIImage(named: "like_button_on")
             cell.likeButton.setImage(likeImage, for: .normal)
-            wasLiked = false
         }
+        ProgressHUD.animate()
         cell.likeButton.isUserInteractionEnabled = false
+        cell.isUserInteractionEnabled = false
         
         imagesListService.changeLike(photoId: photo.id, isLike: like) { response in
             switch response {
             case .success(_):
                 print("LIKE CHANGED")
+                ProgressHUD.dismiss()
                 cell.likeButton.isUserInteractionEnabled = true
+                cell.isUserInteractionEnabled = false
             case .failure(let error):
                 DispatchQueue.main.async {
+                    self.setLikeIcon(for: cell, indexPath: indexPath)
                     let alert = UIAlertController(title: "Ошибка", message: "Не удалось изменить лайк", preferredStyle: .alert)
                     alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
                     UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true)
                 }
                 print("LIKE WAS NOT CHANGED, REASON:", error)
-                if self.wasLiked == true {
-                    let likeImage = UIImage(named: "like_button_off")
-                    cell.likeButton.setImage(likeImage, for: .normal)
-                } else {
-                    let likeImage = UIImage(named: "like_button_on")
-                    cell.likeButton.setImage(likeImage, for: .normal)
-                }
-
+                ProgressHUD.dismiss()
                 cell.likeButton.isUserInteractionEnabled = true
+                cell.isUserInteractionEnabled = false
             }
         }
-        cell.likeButton.isUserInteractionEnabled = true
+        imagesListService.task = nil
     }
-    
 }

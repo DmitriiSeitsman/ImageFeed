@@ -43,6 +43,11 @@ final class OAuth2TokenStorage {
         }
     }
     
+    func clearStorage() {
+        KeychainWrapper.standard.removeObject(forKey: keyToken)
+        KeychainWrapper.standard.removeObject(forKey: keyUsername)
+    }
+    
     func isTokenValid() -> Bool {
         if let token = token {
             if token.isEmpty {

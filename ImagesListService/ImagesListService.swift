@@ -15,8 +15,13 @@ final class ImagesListService {
         return formatter
     }()
     
+    func clearData() {
+        photosFull.removeAll()
+        lastLoadedPage = 1
+    }
+    
     func fetchPhotosNextPage(handler: @escaping (Swift.Result<[photoPackResponse], Error>) -> Void) {
-        
+        print(task as Any)
         guard task == nil, let request = makePhotosRequest() else {
             print(">>> UNABLE TO CREATE REQUEST <<<")
             handler(.failure(AuthServiceError.invalidRequest))
@@ -153,11 +158,17 @@ final class ImagesListService {
     }
     
     private func makePhotosRequest() -> URLRequest? {
-        guard let username = ProfileService.shared.profile?.username else { return nil }
+        
+        guard
+            let username = ProfileService.shared.profile?.username,
+            let token = tokenInStorage
+        else { return nil }
+        print(username)
+        print(token)
         var components = URLComponents(string: Constants.defaultIBaseURLString + "/users/\(username)" + "/photos")
         components?.queryItems = [URLQueryItem(name: "page", value: String(lastLoadedPage))]
         
-        guard let url = components?.url, let token = tokenInStorage else { return nil }
+        guard let url = components?.url else { return nil }
         var request = URLRequest(url: url)
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         

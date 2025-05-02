@@ -47,6 +47,10 @@ final class ProfileService {
         task .resume()
     }
     
+    func clearData() {
+        profile = nil
+    }
+    
     private func convertStruct (profile: ProfileResult) -> Profile {
         Profile(
             username: profile.username ?? "",
