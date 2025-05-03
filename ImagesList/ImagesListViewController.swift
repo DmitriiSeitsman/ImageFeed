@@ -32,10 +32,8 @@ final class ImagesListViewController: UIViewController {
                 var arrayCountUnwrapped: [Photo] = arrayCount as! [Photo]
                 updateTableViewAnimated(photos: &arrayCountUnwrapped)
             }
-        tableView.reloadData()
         loadPhotos()
-        
-        
+        tableView.reloadData()
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -79,6 +77,7 @@ extension ImagesListViewController: UITableViewDelegate {
     
     
     private func loadPhotos() {
+        assert(Thread.isMainThread)
         print("START LOADING PHOTOS")
         print("ARRAY OF PHOTOS BEFORE LOADING NEW PAGE", imagesListService.photosFull.count)
         let arrayCount = imagesListService.photosFull
@@ -86,10 +85,17 @@ extension ImagesListViewController: UITableViewDelegate {
             switch result  {
             case .success:
                 
-                let photosCount = try! result.get().count
+                guard let photosCount = try? result.get().count else {
+                    print("UNABLE TO GET COUNT OF NEW PHOTOS")
+                    return
+                }
+                
                 for photos in 0..<photosCount {
-                    self?.imagesListService.photosFull.append(self?.imagesListService.convertPhotosStruct(response: try! result.get()[photos]) ?? [] as! Photo
-                    )}
+                    guard let convert = self?.imagesListService.convertPhotosStruct(response: try! result.get()[photos]) ?? [] as? Photo else {
+                        print("UNABLE TO CONVERT PhotosStruct")
+                        continue
+                    }
+                    self?.imagesListService.photosFull.append(((convert)))}
                 NotificationCenter.default
                     .post(
                         name: ImagesListService.didChangeNotification,

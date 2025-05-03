@@ -8,6 +8,7 @@ final class ProfileViewController: UIViewController {
     let userNameLabel = UILabel()
     let descriptionLabel = UILabel()
     
+    private var image: UIImage?
     private var authToken = OAuth2TokenStorage.shared.token
     private var usernameInStorage = OAuth2TokenStorage.shared.username
     private var profileImageServiceObserver: NSObjectProtocol?
@@ -81,14 +82,13 @@ final class ProfileViewController: UIViewController {
             imageView.heightAnchor.constraint(equalToConstant: 70),
         ])
         
+        let image = UIImage(resource: .exit)
         let button = UIButton.systemButton(
-            with: UIImage(named: "Exit")!,
+            with: image,
             target: self,
             action: nil
         )
         button.addTarget(self, action: #selector(buttonClick), for: .touchUpInside)
-        
-        
         button.tintColor = .red
         button.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(button)

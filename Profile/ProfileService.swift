@@ -11,6 +11,7 @@ final class ProfileService {
     private init() {}
     
     func fetchProfile(_ authToken: String?, completion: @escaping (Result<Profile, Error>) -> Void) {
+        assert(Thread.isMainThread)
         guard let authToken = authToken else {
             return
         }
@@ -22,7 +23,6 @@ final class ProfileService {
         let session = URLSession.shared
         
         let task = session.data(for: request) { [weak self] result in
-            DispatchQueue.main.async {
                 switch result {
                 case .success(let data):
                     switch ProfileService().decodeProfile(data) {
@@ -30,7 +30,7 @@ final class ProfileService {
                         self?.usernameInStorage = response.username ?? ""
                         let result = ProfileService().convertStruct(profile: response)
                         self?.profile = result
-                        print("USERNAME IN STORAGE:", self?.usernameInStorage ?? "USERNAME DIDN't SAVED")
+                        print("(func fetchProfile) USERNAME IN STORAGE:", self?.usernameInStorage ?? "USERNAME DIDN't SAVED")
                         ProfileImageService.shared.fetchProfileImageURL(authToken: authToken, username: self?.usernameInStorage) { _ in }
                         completion(.success(result))
                     case .failure(let error):
@@ -41,7 +41,6 @@ final class ProfileService {
                     print("func fetchProfile error: \(String(describing: error))")
                     completion(.failure(error))
                 }
-            }
         }
         self.task = task
         task .resume()
@@ -75,8 +74,8 @@ final class ProfileService {
     }
     
     private func makeProfileRequest(authToken: String?) -> URLRequest? {
-        let url = URL(string: "https://api.unsplash.com/me")
-        var request = URLRequest(url: url!)
+        guard let url = URL(string: "https://api.unsplash.com/me") else { return nil }
+        var request = URLRequest(url: url)
         if let authToken = authToken {
             request.httpMethod = "GET"
             request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")

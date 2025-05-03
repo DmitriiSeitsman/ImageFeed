@@ -84,6 +84,7 @@ final class OAuth2Service {
             assertionFailure("Failed to create URL")
             return nil
         }
+        print(url)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         return request

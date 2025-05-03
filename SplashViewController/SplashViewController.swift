@@ -19,7 +19,6 @@ final class SplashViewController: UIViewController {
         setupUI()
         if oauth2Service.oauth2TokenStorage.isTokenValid() {
             fetchProfile(oauth2TokenStorage.token)
-            switchToTabBarController()
             return
         } else {
             let storyboard = UIStoryboard(name: "Main", bundle: .main)
@@ -75,15 +74,20 @@ final class SplashViewController: UIViewController {
 extension SplashViewController: AuthViewControllerDelegate {
     
     func didAuthenticate(_ vc: AuthViewController) {
-        dismiss(animated: true)
+        DispatchQueue.main.async {
+            vc.dismiss(animated: true)
+        }
         guard let token = oauth2TokenStorage.token else { return }
         fetchProfile(token)
     }
     
     func authViewController(_ vc: AuthViewController, didAuthenticateWithCode code: String) {
-        dismiss(animated: true) { [weak self] in
-            guard let self = self else { return }
-            self.fetchOAuthToken(code)
+        DispatchQueue.main.async {
+            self.dismiss(animated: true) { [weak self] in
+                guard let self = self else { return }
+                self.fetchOAuthToken(code)
+            }
+            
         }
     }
     
@@ -97,14 +101,17 @@ extension SplashViewController: AuthViewControllerDelegate {
     }
     
     private func fetchProfile(_ token: String?) {
+        assert(Thread.isMainThread)
         SplashViewController.showHUD()
         guard let token = token else { return }
         profileService.fetchProfile(token) { [weak self] result in
             SplashViewController.dismissHUD()
             switch result {
-            case .success:
+                
+            case .success(let response):
                 guard let self = self else { return }
-                self.switchToTabBarController()
+                usernameInStorage = response.username
+                switchToTabBarController()
             case .failure:
                 print("Ошибка получения профиля \(result)")
                 DispatchQueue.main.async {

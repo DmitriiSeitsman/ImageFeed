@@ -8,6 +8,7 @@ final class ImagesListService {
     
     private let urlSession = URLSession.shared
     private let tokenInStorage = OAuth2TokenStorage.shared.token
+    private let usernameInStorage = OAuth2TokenStorage.shared.username
     private var lastLoadedPage = 1
     private lazy var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -22,6 +23,7 @@ final class ImagesListService {
     }
     
     func fetchPhotosNextPage(handler: @escaping (Swift.Result<[photoPackResponse], Error>) -> Void) {
+        assert(Thread.isMainThread)
     
         guard task == nil, let request = makePhotosRequest() else {
             print(">>> UNABLE TO CREATE REQUEST <<<")
@@ -160,25 +162,26 @@ final class ImagesListService {
     
     private func makePhotosRequest() -> URLRequest? {
         
-        guard
-            let username = ProfileService.shared.profile?.username,
-            let token = tokenInStorage
+        guard let username = ProfileService.shared.profile?.username,
+              let token = tokenInStorage
         else { return nil }
-        print(username)
-        print(token)
+         
+        print("USERNAME:", username)
+        print("TOKEN", token as Any)
         var components = URLComponents(string: Constants.defaultIBaseURLString + "/users/\(username)" + "/photos")
         components?.queryItems = [URLQueryItem(name: "page", value: String(lastLoadedPage))]
         
         guard let url = components?.url else { return nil }
         var request = URLRequest(url: url)
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
+        print("REQUEST:", request.description)
         return request
     }
     
     private func likeOn(authToken: String?, photoId: String) -> URLRequest? {
-        let url = URL(string: "https://api.unsplash.com/photos/\(photoId)/like")
-        var request = URLRequest(url: url!)
+        guard let url = URL(string: "https://api.unsplash.com/photos/\(photoId)/like")
+        else { return nil }
+        var request = URLRequest(url: url)
         if let authToken = authToken {
             request.httpMethod = "POST"
             request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
@@ -187,8 +190,9 @@ final class ImagesListService {
     }
     
     private func likeOff(authToken: String?, photoId: String) -> URLRequest? {
-        let url = URL(string: "https://api.unsplash.com/photos/\(photoId)/like")
-        var request = URLRequest(url: url!)
+        guard let url = URL(string: "https://api.unsplash.com/photos/\(photoId)/like")
+        else { return nil }
+        var request = URLRequest(url: url)
         if let authToken = authToken {
             request.httpMethod = "DELETE"
             request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
