@@ -50,8 +50,10 @@ final class ProfileViewController: UIViewController {
             let url = URL(string: profileImageURL)
         else { return }
         DispatchQueue.main.async {
-            let processor = RoundCornerImageProcessor(cornerRadius: 35)
-            self.imageView.kf.setImage(with: url, placeholder: UIImage(named: "Placeholder.png"), options: [.processor(processor)]) {_ in 
+            let processor = RoundCornerImageProcessor(cornerRadius: 35, targetSize: CGSize(width: 70, height: 70), backgroundColor: .clear)
+            self.imageView.kf.setImage(with: url, placeholder: UIImage(named: "Placeholder.png"), options: [.processor(processor)]) {_ in
+                self.imageView.backgroundColor = .clear
+                self.imageView.layer.masksToBounds = true
             }
         }
     }
@@ -72,6 +74,7 @@ final class ProfileViewController: UIViewController {
     private func setupUI() {
         let profileImage = UIImage(named: "Photo")
         imageView = UIImageView(image: profileImage)
+        imageView.backgroundColor = .clear
         imageView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(imageView)
         
