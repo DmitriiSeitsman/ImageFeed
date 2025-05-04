@@ -81,6 +81,7 @@ extension SplashViewController: AuthViewControllerDelegate {
         fetchProfile(token)
     }
     
+    
     func authViewController(_ vc: AuthViewController, didAuthenticateWithCode code: String) {
         DispatchQueue.main.async {
             self.dismiss(animated: true) { [weak self] in

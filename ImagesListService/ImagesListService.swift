@@ -168,7 +168,7 @@ final class ImagesListService {
          
         print("USERNAME:", username)
         print("TOKEN", token as Any)
-        var components = URLComponents(string: Constants.defaultIBaseURLString + "/users/\(username)" + "/photos")
+        var components = URLComponents(string: Constants.defaultIBaseURLString + "/photos")
         components?.queryItems = [URLQueryItem(name: "page", value: String(lastLoadedPage))]
         
         guard let url = components?.url else { return nil }

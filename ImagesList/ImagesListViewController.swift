@@ -208,7 +208,7 @@ extension ImagesListViewController: ImagesListCellDelegate {
                 print("LIKE CHANGED")
                 ProgressHUD.dismiss()
                 cell.likeButton.isUserInteractionEnabled = true
-                cell.isUserInteractionEnabled = false
+                cell.isUserInteractionEnabled = true
             case .failure(let error):
                 DispatchQueue.main.async {
                     self?.setLikeIcon(for: cell, indexPath: indexPath)
@@ -219,7 +219,7 @@ extension ImagesListViewController: ImagesListCellDelegate {
                 print("LIKE WAS NOT CHANGED, REASON:", error)
                 ProgressHUD.dismiss()
                 cell.likeButton.isUserInteractionEnabled = true
-                cell.isUserInteractionEnabled = false
+                cell.isUserInteractionEnabled = true
             }
         }
         imagesListService.task = nil
