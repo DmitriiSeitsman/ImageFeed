@@ -63,8 +63,6 @@ extension AuthViewController: WebViewViewControllerDelegate {
             case .success(_):
                 DispatchQueue.main.async {
                     self?.delegate?.authViewController(self ?? AuthViewController(), didAuthenticateWithCode: code)
-//                    let splashVC = SplashViewController()
-//                    self?.present(splashVC, animated: true)
                 }
                 AuthViewController.dismissHUD()
             case .failure(let error):

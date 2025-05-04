@@ -107,16 +107,20 @@ extension SplashViewController: AuthViewControllerDelegate {
         guard let token = token else { return }
         profileService.fetchProfile(token) { [weak self] result in
             SplashViewController.dismissHUD()
+            guard let self = self else { return }
             switch result {
-                
             case .success(let response):
-                guard let self = self else { return }
                 usernameInStorage = response.username
                 switchToTabBarController()
-            case .failure:
-                print("Ошибка получения профиля \(result)")
+            case .failure(let Error):
+                print("Ошибка получения профиля \(Error)")
                 DispatchQueue.main.async {
-                    let alert = UIAlertController(title: "Ошибка", message: "Не удалось получить данные профиля", preferredStyle: .alert)
+                    let alert = UIAlertController(title: "Ошибка", message:
+"""
+Не удалось получить данные профиля
+код: \(Error)
+""",
+                                                  preferredStyle: .alert)
                     alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
                     UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true)
                 }

@@ -38,7 +38,7 @@ final class OAuth2Service {
         task?.cancel()
         lastCode = code
         guard let request = makeRequest(code: code) else {
-            print(">>> UNABLE TO CREATE REQUEST <<<")
+            print(">>> UNABLE TO CREATE REQUEST WITH CODE <<<")
             handler(.failure(AuthServiceError.invalidRequest))
             return
         }

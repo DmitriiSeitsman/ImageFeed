@@ -7,6 +7,7 @@ final class ImagesListViewController: UIViewController {
     @IBOutlet weak var dateLabel: UILabel!
     @IBOutlet private var tableView: UITableView!
     
+    private var lastLoadedPage: Int = 1
     private var imageView = UIImageView()
     private var photosServiceObserver: NSObjectProtocol?
     private let showSingleImageSegueIdentifier = "ShowSingleImage"
@@ -26,14 +27,19 @@ final class ImagesListViewController: UIViewController {
                 forName: ImagesListService.didChangeNotification,
                 object: nil,
                 queue: .main
-            ) { [weak self] arrayCount in
+            ) { [weak self] countOfArrayBefore in
                 guard let self = self else { return }
-                guard let arrayCount = arrayCount.userInfo?.values.first else { return }
-                var arrayCountUnwrapped: [Photo] = arrayCount as! [Photo]
-                updateTableViewAnimated(photos: &arrayCountUnwrapped)
+                guard
+                    let value = countOfArrayBefore.userInfo?.values.first,
+                    let photosArray = value as? Int
+                else {
+                    print("Невозможно привести userInfo к Int")
+                    return
+                }
+                print("OLD PHOTOS ARRAY COUNT:", photosArray)
+                updateTableViewAnimated(oldArrayCount: photosArray)
             }
         loadPhotos()
-        tableView.reloadData()
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -48,7 +54,11 @@ final class ImagesListViewController: UIViewController {
         viewController.url = url
     }
     
-    
+    deinit {
+        if let observer = photosServiceObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
 }
 
 extension ImagesListViewController: UITableViewDelegate {
@@ -62,6 +72,10 @@ extension ImagesListViewController: UITableViewDelegate {
         return cellHeight
     }
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        performSegue(withIdentifier: showSingleImageSegueIdentifier, sender: indexPath)
+    }
+    
     private func resize ( _ tableView: UITableView, indexPath: IndexPath) -> CGSize {
         let imageInsets = UIEdgeInsets(top: 4, left: 16, bottom: 4, right: 16)
         let imageViewWidth = tableView.bounds.width - imageInsets.left - imageInsets.right
@@ -71,39 +85,31 @@ extension ImagesListViewController: UITableViewDelegate {
         return CGSize(width: imageViewWidth, height: cellHeight)
     }
     
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        performSegue(withIdentifier: showSingleImageSegueIdentifier, sender: indexPath)
-    }
-    
-    
     private func loadPhotos() {
         assert(Thread.isMainThread)
         print("START LOADING PHOTOS")
         print("ARRAY OF PHOTOS BEFORE LOADING NEW PAGE", imagesListService.photosFull.count)
-        let arrayCount = imagesListService.photosFull
-        ImagesListService().fetchPhotosNextPage() { [weak self] result in
+        let countOfArrayBefore = imagesListService.photosFull.count
+        imagesListService.fetchPhotosNextPage() { [weak self] result in
             switch result  {
-            case .success:
-                
-                guard let photosCount = try? result.get().count else {
-                    print("UNABLE TO GET COUNT OF NEW PHOTOS")
-                    return
-                }
-                
-                for photos in 0..<photosCount {
-                    guard let convert = self?.imagesListService.convertPhotosStruct(response: try! result.get()[photos]) ?? [] as? Photo else {
-                        print("UNABLE TO CONVERT PhotosStruct")
-                        continue
+            case .success (let photoResponses):
+                for response in photoResponses {
+                    let photo = self?.imagesListService.convertPhotosStruct(response: response)
+                    if let photo = photo {
+                        self?.imagesListService.photosFull.append(photo)
+                    } else {
+                        print("UNABLE TO CONVERT photoPackResponse to Photo")
                     }
-                    self?.imagesListService.photosFull.append(((convert)))}
+                }
                 NotificationCenter.default
                     .post(
                         name: ImagesListService.didChangeNotification,
                         object: self,
-                        userInfo: ["photosFull.count": arrayCount])
+                        userInfo: ["photosFull": countOfArrayBefore])
                 print("ARRAY COUNT AFTER", self?.imagesListService.photosFull.count as Any)
-                self?.tableView.reloadData()
-                
+                DispatchQueue.main.async {
+                    self?.tableView.reloadData()
+                }
             case .failure(let error):
                 print("FAILED TO LOAD PHOTOS", error.localizedDescription)
             }
@@ -114,24 +120,6 @@ extension ImagesListViewController: UITableViewDelegate {
 extension ImagesListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return imagesListService.photosFull.count
-    }
-    
-    func updateTableViewAnimated(photos: inout Array<Photo>) {
-        if photos.isEmpty {
-            return
-        }
-        let oldCount = photos.count
-        let newCount = imagesListService.photosFull.count
-        photos = imagesListService.photosFull
-        print("OLD COUNT: \(oldCount) NEW COUNT: \(newCount)")
-        if oldCount != newCount {
-            tableView.performBatchUpdates {
-                let indexPaths = (oldCount..<newCount).map { i in
-                    IndexPath(row: i, section: 0)
-                }
-                tableView.insertRows(at: indexPaths, with: .automatic)
-            } completion: { _ in }
-        }
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -156,32 +144,47 @@ extension ImagesListViewController: UITableViewDataSource {
         }
     }
     
-    func configCell(for cell: ImagesListCell, with indexPath: IndexPath) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            let image = imagesListService.photosFull[indexPath.row]
-            let url = URL(string: String(image.thumbImageURL))
-            
-            let placeholderImage = UIImage(resource: .tableViewPlaceholder)
-            cell.cellImage.contentMode = .center
-            cell.cellImage.backgroundColor = .ypGray
-            let size: CGSize = resize(tableView, indexPath: indexPath)
-            let processor = ResizingImageProcessor(referenceSize: size)
-            cell.cellImage.kf.setImage(with: url, placeholder: placeholderImage, options: [.processor(processor)])
-            
-            guard let date = image.createdAt as Date?
-            else {
-                cell.dateLabel.text = ""
-                return
-            }
-            
-            cell.dateLabel.text = dateFormatter.string(from: date)
-            
-            setLikeIcon(for: cell, indexPath: indexPath)
+    private func updateTableViewAnimated(oldArrayCount: Int) {
+        if oldArrayCount == 0 {
+            return
+        }
+        let oldCount = oldArrayCount
+        let newCount = imagesListService.photosFull.count
+        print("OLD COUNT: \(oldCount) NEW COUNT: \(newCount)")
+        if oldCount != newCount {
+            tableView.performBatchUpdates {
+                let indexPaths = (oldCount..<newCount).map { i in
+                    IndexPath(row: i, section: 0)
+                }
+                tableView.insertRows(at: indexPaths, with: .automatic)
+            } completion: { _ in }
         }
     }
     
-    func setLikeIcon(for cell: ImagesListCell, indexPath: IndexPath) {
+    private  func configCell(for cell: ImagesListCell, with indexPath: IndexPath) {
+        let image = imagesListService.photosFull[indexPath.row]
+        let url = URL(string: String(image.thumbImageURL))
+        
+        let placeholderImage = UIImage(resource: .tableViewPlaceholder)
+        cell.cellImage.contentMode = .center
+        cell.cellImage.backgroundColor = .ypGray
+        let size: CGSize = resize(tableView, indexPath: indexPath)
+        let processor = ResizingImageProcessor(referenceSize: size)
+        cell.cellImage.kf.setImage(with: url, placeholder: placeholderImage, options: [.processor(processor)]) {_ in
+                self.tableView.reloadRows(at: [indexPath], with: .automatic)
+        }
+        
+        guard let date = image.createdAt as Date?
+        else {
+            cell.dateLabel.text = ""
+            return
+        }
+        
+        cell.dateLabel.text = dateFormatter.string(from: date)
+        setLikeIcon(for: cell, indexPath: indexPath)
+    }
+    
+    private func setLikeIcon(for cell: ImagesListCell, indexPath: IndexPath) {
         let image = imagesListService.photosFull[indexPath.row]
         let isLiked = image.isLiked
         let likeImage = isLiked ? UIImage(named: "like_button_on") : UIImage(named: "like_button_off")
@@ -206,9 +209,11 @@ extension ImagesListViewController: ImagesListCellDelegate {
             switch response {
             case .success:
                 print("LIKE CHANGED")
-                ProgressHUD.dismiss()
-                cell.likeButton.isUserInteractionEnabled = true
-                cell.isUserInteractionEnabled = true
+                DispatchQueue.main.async {
+                    ProgressHUD.dismiss()
+                    cell.likeButton.isUserInteractionEnabled = true
+                    cell.isUserInteractionEnabled = true
+                }
             case .failure(let error):
                 DispatchQueue.main.async {
                     self?.setLikeIcon(for: cell, indexPath: indexPath)
@@ -224,4 +229,5 @@ extension ImagesListViewController: ImagesListCellDelegate {
         }
         imagesListService.task = nil
     }
+    
 }

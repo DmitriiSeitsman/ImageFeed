@@ -9,7 +9,7 @@ final class ImagesListService {
     private let urlSession = URLSession.shared
     private let tokenInStorage = OAuth2TokenStorage.shared.token
     private let usernameInStorage = OAuth2TokenStorage.shared.username
-    private var lastLoadedPage = 1
+    private var lastLoadedPage: Int = 1
     private lazy var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
@@ -24,7 +24,7 @@ final class ImagesListService {
     
     func fetchPhotosNextPage(handler: @escaping (Swift.Result<[photoPackResponse], Error>) -> Void) {
         assert(Thread.isMainThread)
-    
+        
         guard task == nil, let request = makePhotosRequest() else {
             print(">>> UNABLE TO CREATE REQUEST <<<")
             handler(.failure(AuthServiceError.invalidRequest))
@@ -33,23 +33,24 @@ final class ImagesListService {
         
         let session = URLSession.shared
         let task = session.data(for: request) {[weak self] result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let data):
-                    //print("DATA IS HERE:--->>>>", String(data: data, encoding: .utf8) ?? "NO DATA during PHOTOS REQUEST")
-                    switch ImagesListService().decodePhotos(data) {
-                    case .success(let response):
-                        print(">>>>> SUCCESSFULLY DECODED PHOTOS RESPONSE, COUNT OF ARRAY IS: \(response.count) <<<<<")
-                        self?.lastLoadedPage += 1
-                        handler(.success(response))
-                    case .failure(let error):
-                        print("func fetchPhotosNextPage error: \(String(describing: error))")
-                        handler(.failure(error))
-                    }
+            switch result {
+            case .success(let data):
+                //print("DATA IS HERE:--->>>>", String(data: data, encoding: .utf8) ?? "NO DATA during PHOTOS REQUEST")
+                switch self?.decodePhotos(data) {
+                case .success(let response):
+                    self?.incrementLastPage()
+                    print(">>>>> SUCCESSFULLY DECODED PHOTOS RESPONSE, COUNT OF ARRAY IS: \(response.count) <<<<<")
+                    handler(.success(response))
+                    
                 case .failure(let error):
                     print("func fetchPhotosNextPage error: \(String(describing: error))")
                     handler(.failure(error))
+                case .none:
+                    print("SELF IS NIL")
                 }
+            case .failure(let error):
+                print("func fetchPhotosNextPage error: \(String(describing: error))")
+                handler(.failure(error))
             }
             self?.task = nil
         }
@@ -57,7 +58,9 @@ final class ImagesListService {
         task .resume()
     }
     
+    
     func convertPhotosStruct (response: photoPackResponse) -> Photo {
+        
         let date: Date? = dateFormatter.date(from: response.createdAt)
         return Photo(
             id: response.id,
@@ -94,7 +97,7 @@ final class ImagesListService {
                         handler(.failure(error))
                     }
                 }
-
+                
             }
             self.task = task
             task .resume()
@@ -152,22 +155,22 @@ final class ImagesListService {
                 
                 self.photosFull.remove(at: index)
                 self.photosFull.insert(contentsOf: newPhoto, at: index)
-                print("LIKE STATUS","ID:", photo.id, photo.isLiked)
-                print(self.photosFull[index].id, self.photosFull[index].isLiked)
+                print("OLD LIKE STATUS: /","ID:", photo.id, "/ PROPERTY:", photo.isLiked)
+                print("NEW LIKE STATUS: /","ID:",self.photosFull[index].id, "/ PROPERTY:", self.photosFull[index].isLiked)
             }
-            
         }
         return
     }
     
+    private func incrementLastPage() {
+        lastLoadedPage += 1
+        return
+    }
+    
     private func makePhotosRequest() -> URLRequest? {
-        
-        guard let username = ProfileService.shared.profile?.username,
-              let token = tokenInStorage
-        else { return nil }
-         
-        print("USERNAME:", username)
+        guard let token = tokenInStorage else { return nil }
         print("TOKEN", token as Any)
+        print("Last page is:", lastLoadedPage)
         var components = URLComponents(string: Constants.defaultIBaseURLString + "/photos")
         components?.queryItems = [URLQueryItem(name: "page", value: String(lastLoadedPage))]
         
@@ -175,6 +178,7 @@ final class ImagesListService {
         var request = URLRequest(url: url)
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         print("REQUEST:", request.description)
+        
         return request
     }
     
@@ -201,3 +205,4 @@ final class ImagesListService {
     }
     
 }
+
