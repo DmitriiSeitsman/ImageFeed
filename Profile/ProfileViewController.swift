@@ -75,6 +75,7 @@ final class ProfileViewController: UIViewController {
         let profileImage = UIImage(named: "Photo")
         imageView = UIImageView(image: profileImage)
         imageView.backgroundColor = .clear
+        imageView.layer.cornerRadius = 35
         imageView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(imageView)
         
