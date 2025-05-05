@@ -35,6 +35,7 @@ final class SingleImageViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        scrollView.sendSubviewToBack(imageView)
         scrollView.minimumZoomScale = 0.1
         scrollView.maximumZoomScale = 1.25
         
@@ -51,8 +52,9 @@ final class SingleImageViewController: UIViewController {
             case .failure(let error):
                 print("Job failed: \(error.localizedDescription)")
                 DispatchQueue.main.async {
-                    let alertController = UIAlertController(title: "Ошибка", message: "не удалось загрузить картинку", preferredStyle: .alert)
-                    self.present(alertController, animated: true)
+                    let alert = UIAlertController(title: "Ошибка", message: "Не удалось загрузить изображение", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                    UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true)
                 }
             }
         }

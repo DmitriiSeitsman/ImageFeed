@@ -1,13 +1,15 @@
 import UIKit
 
 final class ImagesListService {
+    var task: URLSessionTask?
+    var photosFull: [Photo] = []
+    
     static let didChangeNotification = Notification.Name(rawValue: "ImagesListServiceDidChange")
     
     private let urlSession = URLSession.shared
-    var task: URLSessionTask?
-    var photosFull: [Photo] = []
-    private let tokenInStorage = OAuth2TokenStorage().token
-    private var lastLoadedPage = 1
+    private let tokenInStorage = OAuth2TokenStorage.shared.token
+    private let usernameInStorage = OAuth2TokenStorage.shared.username
+    private var lastLoadedPage: Int = 1
     private lazy var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
@@ -15,7 +17,13 @@ final class ImagesListService {
         return formatter
     }()
     
+    func clearData() {
+        photosFull.removeAll()
+        lastLoadedPage = 1
+    }
+    
     func fetchPhotosNextPage(handler: @escaping (Swift.Result<[photoPackResponse], Error>) -> Void) {
+        assert(Thread.isMainThread)
         
         guard task == nil, let request = makePhotosRequest() else {
             print(">>> UNABLE TO CREATE REQUEST <<<")
@@ -25,23 +33,24 @@ final class ImagesListService {
         
         let session = URLSession.shared
         let task = session.data(for: request) {[weak self] result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let data):
-                    //print("DATA IS HERE:--->>>>", String(data: data, encoding: .utf8) ?? "NO DATA during PHOTOS REQUEST")
-                    switch ImagesListService().decodePhotos(data) {
-                    case .success(let response):
-                        print(">>>>> SUCCESSFULLY DECODED PHOTOS RESPONSE, COUNT OF ARRAY IS: \(response.count) <<<<<")
-                        self?.lastLoadedPage += 1
-                        handler(.success(response))
-                    case .failure(let error):
-                        print("func fetchPhotosNextPage error: \(String(describing: error))")
-                        handler(.failure(error))
-                    }
+            switch result {
+            case .success(let data):
+                //print("DATA IS HERE:--->>>>", String(data: data, encoding: .utf8) ?? "NO DATA during PHOTOS REQUEST")
+                switch self?.decodePhotos(data) {
+                case .success(let response):
+                    self?.incrementLastPage()
+                    print(">>>>> SUCCESSFULLY DECODED PHOTOS RESPONSE, COUNT OF ARRAY IS: \(response.count) <<<<<")
+                    handler(.success(response))
+                    
                 case .failure(let error):
                     print("func fetchPhotosNextPage error: \(String(describing: error))")
                     handler(.failure(error))
+                case .none:
+                    print("SELF IS NIL")
                 }
+            case .failure(let error):
+                print("func fetchPhotosNextPage error: \(String(describing: error))")
+                handler(.failure(error))
             }
             self?.task = nil
         }
@@ -49,7 +58,9 @@ final class ImagesListService {
         task .resume()
     }
     
+    
     func convertPhotosStruct (response: photoPackResponse) -> Photo {
+        
         let date: Date? = dateFormatter.date(from: response.createdAt)
         return Photo(
             id: response.id,
@@ -62,48 +73,53 @@ final class ImagesListService {
         )
     }
     
-    func changeLike(photoId: String, isLike: Bool, _ completion: @escaping (Result<Void, Error>) -> Void) {
+    func changeLike(photoId: String, isLike: Bool, _ handler: @escaping (Swift.Result<[Photo], Error>) -> Void) {
+        guard task == nil else {
+            print("TASK IS ACTIVE")
+            task?.cancel()
+            return
+        }
         if isLike == true {
-            guard task == nil, let request = likeOff(authToken: tokenInStorage, photoId: photoId) else {
+            guard let request = likeOff(authToken: tokenInStorage, photoId: photoId) else {
                 print(">>> UNABLE TO MAKE LIKE REQUEST <<<")
                 return
             }
             
             let session = URLSession.shared
-            let task = session.data(for: request) {[weak self] success in
+            let task = session.data(for: request) {[weak self] result in
                 DispatchQueue.main.async {
-                    switch success {
-                    case .success(let success):
-                        print(self?.photosFull as Any)
+                    switch result {
+                    case .success(_):
                         self?.changePhotoInArray(photoId: photoId)
-                        print(self?.photosFull as Any)
+                        handler(.success(self?.photosFull ?? []))
                     case .failure(let error):
-                        print(">>> LIKE REQUEST RETURNED ERROR: \(error) <<<")
-                        //запрос неудачно
+                        print("ERROR AFTER REQUEST")
+                        handler(.failure(error))
                     }
                 }
-                self?.task = nil
+                
             }
             self.task = task
             task .resume()
         } else {
             
-            guard task == nil, let request = likeOn(authToken: tokenInStorage, photoId: photoId) else {
+            guard let request = likeOn(authToken: tokenInStorage, photoId: photoId) else {
                 print(">>> UNABLE TO MAKE LIKE REQUEST <<<")
                 return
             }
             
             let session = URLSession.shared
-            let task = session.data(for: request) {[weak self] success in
+            let task = session.data(for: request) {[weak self] result in
                 DispatchQueue.main.async {
-                    switch success {
-                    case .success(let success):
+                    switch result {
+                    case .success(_):
                         self?.changePhotoInArray(photoId: photoId)
+                        handler(.success(self?.photosFull ?? []))
                     case .failure(let error):
-                        print(">>> LIKE REQUEST RETURNED ERROR: \(error) <<<")
+                        print("ERROR AFTER REQUEST")
+                        handler(.failure(error))
                     }
                 }
-                self?.task = nil
             }
             self.task = task
             task .resume()
@@ -124,43 +140,52 @@ final class ImagesListService {
     private func changePhotoInArray(photoId: String) {
         DispatchQueue.main.async {
             if let index = self.photosFull.firstIndex(where: { $0.id == photoId }) {
-
-               let photo = self.photosFull[index]
-                print("------------LIKE STATUS ID:", photo)
+                
+                let photo = self.photosFull[index]
+                
                 let newPhoto: [Photo] = [Photo(
-                        id: photo.id,
-                        size: photo.size,
-                        createdAt: photo.createdAt,
-                        welcomeDescription: photo.welcomeDescription,
-                        thumbImageURL: photo.thumbImageURL,
-                        largeImageURL: photo.largeImageURL,
-                        isLiked: !photo.isLiked
-                    )]
-print("----------------NEW PHOTO:", newPhoto)
+                    id: photo.id,
+                    size: photo.size,
+                    createdAt: photo.createdAt,
+                    welcomeDescription: photo.welcomeDescription,
+                    thumbImageURL: photo.thumbImageURL,
+                    largeImageURL: photo.largeImageURL,
+                    isLiked: !photo.isLiked
+                )]
+                
                 self.photosFull.remove(at: index)
                 self.photosFull.insert(contentsOf: newPhoto, at: index)
-                print("LIKE STATUS","ID:", photo.id, photo.isLiked)
-                print(self.photosFull[index].id, self.photosFull[index].isLiked)
+                print("OLD LIKE STATUS: /","ID:", photo.id, "/ PROPERTY:", photo.isLiked)
+                print("NEW LIKE STATUS: /","ID:",self.photosFull[index].id, "/ PROPERTY:", self.photosFull[index].isLiked)
             }
-            
         }
+        return
+    }
+    
+    private func incrementLastPage() {
+        lastLoadedPage += 1
+        return
     }
     
     private func makePhotosRequest() -> URLRequest? {
-        guard let username = ProfileService.shared.profile?.username else { return nil }
-        var components = URLComponents(string: Constants.defaultIBaseURLString + "/users/\(username)" + "/photos")
+        guard let token = tokenInStorage else { return nil }
+        print("TOKEN", token as Any)
+        print("Last page is:", lastLoadedPage)
+        var components = URLComponents(string: Constants.defaultIBaseURLString + "/photos")
         components?.queryItems = [URLQueryItem(name: "page", value: String(lastLoadedPage))]
         
-        guard let url = components?.url, let token = tokenInStorage else { return nil }
+        guard let url = components?.url else { return nil }
         var request = URLRequest(url: url)
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        print("REQUEST:", request.description)
         
         return request
     }
     
     private func likeOn(authToken: String?, photoId: String) -> URLRequest? {
-        let url = URL(string: "https://api.unsplash.com/photos/\(photoId)/like")
-        var request = URLRequest(url: url!)
+        guard let url = URL(string: "https://api.unsplash.com/photos/\(photoId)/like")
+        else { return nil }
+        var request = URLRequest(url: url)
         if let authToken = authToken {
             request.httpMethod = "POST"
             request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
@@ -169,8 +194,9 @@ print("----------------NEW PHOTO:", newPhoto)
     }
     
     private func likeOff(authToken: String?, photoId: String) -> URLRequest? {
-        let url = URL(string: "https://api.unsplash.com/photos/\(photoId)/like")
-        var request = URLRequest(url: url!)
+        guard let url = URL(string: "https://api.unsplash.com/photos/\(photoId)/like")
+        else { return nil }
+        var request = URLRequest(url: url)
         if let authToken = authToken {
             request.httpMethod = "DELETE"
             request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
@@ -179,3 +205,4 @@ print("----------------NEW PHOTO:", newPhoto)
     }
     
 }
+

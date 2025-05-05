@@ -3,10 +3,11 @@ import SwiftUI
 import SwiftKeychainWrapper
 
 final class OAuth2TokenStorage {
-    
+    static let shared = OAuth2TokenStorage()
     private let storage: UserDefaults = .standard
     private let keyToken: String = "Bearer Token"
     private let keyUsername: String = "username"
+    private init (){}
     
     var token: String? {
         get {
@@ -41,6 +42,11 @@ final class OAuth2TokenStorage {
                 return
             }
         }
+    }
+    
+    func clearStorage() {
+        KeychainWrapper.standard.removeObject(forKey: keyToken)
+        KeychainWrapper.standard.removeObject(forKey: keyUsername)
     }
     
     func isTokenValid() -> Bool {

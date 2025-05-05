@@ -8,8 +8,9 @@ final class ProfileViewController: UIViewController {
     let userNameLabel = UILabel()
     let descriptionLabel = UILabel()
     
-    private var authToken = OAuth2TokenStorage().token
-    private var usernameInStorage = OAuth2TokenStorage().username
+    private var image: UIImage?
+    private var authToken = OAuth2TokenStorage.shared.token
+    private var usernameInStorage = OAuth2TokenStorage.shared.username
     private var profileImageServiceObserver: NSObjectProtocol?
     
     override func viewDidLoad() {
@@ -49,14 +50,32 @@ final class ProfileViewController: UIViewController {
             let url = URL(string: profileImageURL)
         else { return }
         DispatchQueue.main.async {
-            let processor = RoundCornerImageProcessor(cornerRadius: 35)
-            self.imageView.kf.setImage(with: url, placeholder: UIImage(named: "Placeholder.png"), options: [.processor(processor)])
+            let processor = RoundCornerImageProcessor(cornerRadius: 35, targetSize: CGSize(width: 70, height: 70), backgroundColor: .clear)
+            self.imageView.kf.setImage(with: url, placeholder: UIImage(named: "Placeholder.png"), options: [.processor(processor)]) {_ in
+                self.imageView.backgroundColor = .clear
+                self.imageView.layer.masksToBounds = true
+            }
         }
+    }
+    
+    @objc private func buttonClick(){
+
+        let alert = UIAlertController(title: "Пока, пока!", message: "Уверены, что хотите выйти?", preferredStyle: .alert)
+        let logoutAction: UIAlertAction = UIAlertAction(title: "Да", style: .destructive) { (_) in
+            ProfileLogoutService.shared.logout(sender: UIButton())
+        }
+        let cancelAction: UIAlertAction = UIAlertAction(title: "Нет", style: .cancel)
+        alert.addAction(logoutAction)
+        alert.addAction(cancelAction)
+        UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true)
+        
     }
     
     private func setupUI() {
         let profileImage = UIImage(named: "Photo")
         imageView = UIImageView(image: profileImage)
+        imageView.backgroundColor = .clear
+        imageView.layer.cornerRadius = 35
         imageView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(imageView)
         
@@ -67,12 +86,13 @@ final class ProfileViewController: UIViewController {
             imageView.heightAnchor.constraint(equalToConstant: 70),
         ])
         
+        let image = UIImage(resource: .exit)
         let button = UIButton.systemButton(
-            with: UIImage(named: "Exit")!,
+            with: image,
             target: self,
             action: nil
         )
-        
+        button.addTarget(self, action: #selector(buttonClick), for: .touchUpInside)
         button.tintColor = .red
         button.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(button)

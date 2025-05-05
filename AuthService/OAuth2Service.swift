@@ -7,7 +7,7 @@ enum AuthServiceError: Error {
 final class OAuth2Service {
     
     static let shared = OAuth2Service()
-    let oauth2TokenStorage = OAuth2TokenStorage()
+    let oauth2TokenStorage = OAuth2TokenStorage.shared
     var OAuthToken: String?
     
     private let urlSession = URLSession.shared
@@ -38,7 +38,7 @@ final class OAuth2Service {
         task?.cancel()
         lastCode = code
         guard let request = makeRequest(code: code) else {
-            print(">>> UNABLE TO CREATE REQUEST <<<")
+            print(">>> UNABLE TO CREATE REQUEST WITH CODE <<<")
             handler(.failure(AuthServiceError.invalidRequest))
             return
         }
@@ -84,6 +84,7 @@ final class OAuth2Service {
             assertionFailure("Failed to create URL")
             return nil
         }
+        print(url)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         return request

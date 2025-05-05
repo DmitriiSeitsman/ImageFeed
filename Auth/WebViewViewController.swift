@@ -109,6 +109,7 @@ extension WebViewViewController: WKNavigationDelegate {
                 print("Missing 'code' in query parameters")
                 return nil
         }
+        print("CODE:", codeItem.value as Any)
             return codeItem.value
     }
 }

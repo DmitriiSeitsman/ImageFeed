@@ -4,7 +4,7 @@ import Kingfisher
 final class ProfileImageService {
     
     private(set) var avatarURL: String?
-    private var usernameInStorage = OAuth2TokenStorage().username
+    private var usernameInStorage = OAuth2TokenStorage.shared.username
     private let urlSession = URLSession.shared
     private var task: URLSessionTask?
     static let shared = ProfileImageService()
@@ -18,7 +18,7 @@ final class ProfileImageService {
               let username = username  else {
             return
         }
-
+        
         guard let request = makeImageRequest(authToken: authToken, username: username) else {
             print("func fetchProfileImageURL: Request failed")
             completion(.failure(AuthServiceError.invalidRequest))
@@ -27,27 +27,29 @@ final class ProfileImageService {
         let session = URLSession.shared
         let task = session.data(for: request) { [weak self] result in
             DispatchQueue.main.async {
-            switch result {
-            case .success(let data):
-                switch ProfileImageService.shared.decodeImage(data) {
-                case .success(let response):
-                    self?.avatarURL = response.profileImage?.medium
-                    let profileImageURL = self?.avatarURL as Any
-                    NotificationCenter.default
-                        .post(
-                            name: ProfileImageService.didChangeNotification,
-                            object: self,
-                            userInfo: ["URL": profileImageURL])
-                    completion(.success(String(describing: self?.avatarURL)))
+                guard let self = self else { return }
+                switch result {
+                case .success(let data):
+                    switch ProfileImageService.shared.decodeImage(data) {
+                    case .success(let response):
+                        guard let profileImage = response.profileImage else { return }
+                        self.avatarURL = profileImage.medium
+                        let profileImageURL = self.avatarURL as Any
+                        NotificationCenter.default
+                            .post(
+                                name: ProfileImageService.didChangeNotification,
+                                object: self,
+                                userInfo: ["URL": profileImageURL])
+                        completion(.success(String(describing: self.avatarURL)))
+                    case .failure(let error):
+                        print("func fetchProfile error: \(String(describing: error))")
+                        completion(.failure(error))
+                    }
                 case .failure(let error):
                     print("func fetchProfile error: \(String(describing: error))")
                     completion(.failure(error))
                 }
-            case .failure(let error):
-                print("func fetchProfile error: \(String(describing: error))")
-                completion(.failure(error))
             }
-        }
         }
         self.task = task
         task .resume()
@@ -65,8 +67,8 @@ final class ProfileImageService {
     }
     
     private func makeImageRequest(authToken: String?, username: String?) -> URLRequest? {
-        let url = URL(string: "https://api.unsplash.com/users/\(username ?? "no username in storage")")
-        var request = URLRequest(url: url!)
+         guard let url = URL(string: "https://api.unsplash.com/users/\(username ?? "no username in storage")") else { return nil }
+        var request = URLRequest(url: url)
         if let authToken = authToken {
             request.httpMethod = "GET"
             request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
