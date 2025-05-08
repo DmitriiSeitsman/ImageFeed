@@ -77,7 +77,7 @@ final class WebViewViewController: UIViewController & WebViewViewControllerProto
     func setProgressValue(_ newValue: Float) {
         progressView.progress = newValue
     }
-
+    
     func setProgressHidden(_ isHidden: Bool) {
         progressView.isHidden = isHidden
     }
@@ -85,18 +85,18 @@ final class WebViewViewController: UIViewController & WebViewViewControllerProto
 }
 
 extension WebViewViewController: WKNavigationDelegate {
-        func webView(
-            _ webView: WKWebView,
-            decidePolicyFor navigationAction: WKNavigationAction,
-            decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
-        ) {
-            if let code = code(from: navigationAction) {
-                delegate?.webViewViewController(self, didAuthenticateWithCode: code)
-                decisionHandler(.cancel)
-            } else {
-                decisionHandler(.allow)
-            }
+    func webView(
+        _ webView: WKWebView,
+        decidePolicyFor navigationAction: WKNavigationAction,
+        decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
+    ) {
+        if let code = code(from: navigationAction) {
+            delegate?.webViewViewController(self, didAuthenticateWithCode: code)
+            decisionHandler(.cancel)
+        } else {
+            decisionHandler(.allow)
         }
+    }
     
     private func code(from navigationAction: WKNavigationAction) -> String? {
         if let url = navigationAction.request.url {
@@ -104,5 +104,5 @@ extension WebViewViewController: WKNavigationDelegate {
         }
         return nil
     }
-
+    
 }

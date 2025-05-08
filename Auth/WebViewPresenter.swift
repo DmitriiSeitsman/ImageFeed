@@ -16,23 +16,16 @@ final class WebViewPresenter: WebViewPresenterProtocol {
     
     weak var view: WebViewViewControllerProtocol?
     
+    var authHelper: AuthHelperProtocol
+    
+    init(authHelper: AuthHelperProtocol) {
+        self.authHelper = authHelper
+    }
+    
     func viewDidLoad() {
-        guard var urlComponents = URLComponents(string: WebViewConstants.unsplashAuthorizeURLString) else {
-            return
-        }
+        guard let request = authHelper.authRequest() else { return }
         
-        urlComponents.queryItems = [
-            URLQueryItem(name: "client_id", value: Constants.accessKey),
-            URLQueryItem(name: "redirect_uri", value: Constants.redirectURI),
-            URLQueryItem(name: "response_type", value: "code"),
-            URLQueryItem(name: "scope", value: Constants.accessScope)
-        ]
-        
-        guard let url = urlComponents.url else {
-            return
-        }
-        
-        let request = URLRequest(url: url)
+        view?.load(request: request)
         
         didUpdateProgressValue(0)
         
@@ -52,26 +45,7 @@ final class WebViewPresenter: WebViewPresenterProtocol {
     }
     
     func code(from url: URL) -> String? {
-            guard let urlComponents = URLComponents(string: url.absoluteString) else {
-                print ("Could not create URLComponents from \(url.absoluteString)")
-                return nil
-        }
-        print(urlComponents.path)
-        
-        guard urlComponents.path == "/oauth/authorize/native" else {
-            print("URL path does not match expected path: \(urlComponents.path)")
-            return nil
-        }
-            guard let items = urlComponents.queryItems else {
-                print("Missing query parameters")
-                return nil
-        }
-            guard let codeItem = items.first(where: { $0.name == "code" }) else {
-                print("Missing 'code' in query parameters")
-                return nil
-        }
-        print("CODE:", codeItem.value as Any)
-            return codeItem.value
+        authHelper.code(from: url)
     }
     
 }
