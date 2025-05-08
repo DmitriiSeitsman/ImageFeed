@@ -118,7 +118,7 @@ extension SplashViewController: AuthViewControllerDelegate {
                     let alert = UIAlertController(title: "Ошибка", message:
 """
 Не удалось получить данные профиля
-код: \(Error)
+причина: \(Error.localizedDescription)
 """,
                                                   preferredStyle: .alert)
                     alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
