@@ -1,7 +1,12 @@
 import UIKit
 import Kingfisher
 
-final class ProfileViewController: UIViewController {
+public protocol ProfileViewControllerProtocol: AnyObject {
+   var presenter: ProfileViewPresenterProtocol? { get set }
+}
+
+final class ProfileViewController: UIViewController & ProfileViewControllerProtocol {
+    var presenter: ProfileViewPresenterProtocol?
     
     var imageView = UIImageView()
     let loginNameLabel = UILabel()
@@ -58,7 +63,7 @@ final class ProfileViewController: UIViewController {
         }
     }
     
-    @objc private func buttonClick(){
+    @objc private func logoutButtonClick(){
 
         let alert = UIAlertController(title: "Пока, пока!", message: "Уверены, что хотите выйти?", preferredStyle: .alert)
         let logoutAction: UIAlertAction = UIAlertAction(title: "Да", style: .destructive) { (_) in
@@ -92,7 +97,7 @@ final class ProfileViewController: UIViewController {
             target: self,
             action: nil
         )
-        button.addTarget(self, action: #selector(buttonClick), for: .touchUpInside)
+        button.addTarget(self, action: #selector(logoutButtonClick), for: .touchUpInside)
         button.tintColor = .red
         button.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(button)
