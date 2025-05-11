@@ -1,7 +1,11 @@
 import UIKit
 import Kingfisher
 
-final class ProfileImageService {
+protocol ProfileImageServiceProtocol {
+    var avatarURL: String? { get }
+}
+
+final class ProfileImageService: ProfileImageServiceProtocol {
     
     private(set) var avatarURL: String?
     private var usernameInStorage = OAuth2TokenStorage.shared.username

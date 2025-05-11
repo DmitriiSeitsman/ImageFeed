@@ -2,10 +2,14 @@ import UIKit
 import Kingfisher
 
 public protocol ProfileViewControllerProtocol: AnyObject {
-   var presenter: ProfileViewPresenterProtocol? { get set }
+    var presenter: ProfileViewPresenterProtocol? { get set }
+    func updateProfileDetails(profile: Any)
+    func updateAvatar(url: URL)
+    func showLogoutAlert()
 }
 
-final class ProfileViewController: UIViewController & ProfileViewControllerProtocol {
+final class ProfileViewController: UIViewController {
+    
     var presenter: ProfileViewPresenterProtocol?
     
     var imageView = UIImageView()
@@ -20,6 +24,7 @@ final class ProfileViewController: UIViewController & ProfileViewControllerProto
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        presenter?.viewDidLoad()
         profileImageServiceObserver = NotificationCenter.default
             .addObserver(
                 forName: ProfileImageService.didChangeNotification,
@@ -27,53 +32,17 @@ final class ProfileViewController: UIViewController & ProfileViewControllerProto
                 queue: .main
             ) { [weak self] _ in
                 guard let self = self else { return }
-                self.updateAvatar()
-                self.updateProfileDetails(profile: ProfileService.shared.profile)
+                presenter?.didReceiveAvatarUpdate()
             }
         
         setupUI()
         configureuserNameLabel(userNameLabel, text: "Екатерина Новикова", fontSize: 23, color: .ypWhite)
         configureLoginNameLabel(loginNameLabel, text: "@ekaterinanovikova", fontSize: 13, color: .ypGray)
         configureDescriptionLabel(descriptionLabel, text: "Hello World!", fontSize: 13, color: .ypWhite)
-        updateAvatar()
-
-        updateProfileDetails(profile: ProfileService.shared.profile)
-    }
-    
-    private func updateProfileDetails(profile: Profile?) {
-        guard let profile = profile else { return }
-        DispatchQueue.main.async { [self] in
-            userNameLabel.text = "\(profile.firstName) \(profile.lastName)"
-            loginNameLabel.text = "@\(profile.username)"
-            descriptionLabel.text = profile.bio
-        }
-    }
-    
-    private func updateAvatar() {
-        guard
-            let profileImageURL = ProfileImageService.shared.avatarURL,
-            let url = URL(string: profileImageURL)
-        else { return }
-        DispatchQueue.main.async {
-            let processor = RoundCornerImageProcessor(cornerRadius: 35, targetSize: CGSize(width: 70, height: 70), backgroundColor: .clear)
-            self.imageView.kf.setImage(with: url, placeholder: UIImage(named: "Placeholder.png"), options: [.processor(processor)]) {_ in
-                self.imageView.backgroundColor = .clear
-                self.imageView.layer.masksToBounds = true
-            }
-        }
     }
     
     @objc private func logoutButtonClick(){
-
-        let alert = UIAlertController(title: "Пока, пока!", message: "Уверены, что хотите выйти?", preferredStyle: .alert)
-        let logoutAction: UIAlertAction = UIAlertAction(title: "Да", style: .destructive) { (_) in
-            ProfileLogoutService.shared.logout(sender: UIButton())
-        }
-        let cancelAction: UIAlertAction = UIAlertAction(title: "Нет", style: .cancel)
-        alert.addAction(logoutAction)
-        alert.addAction(cancelAction)
-        UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true)
-        
+        presenter?.didTapLogout()
     }
     
     private func setupUI() {
@@ -133,5 +102,43 @@ final class ProfileViewController: UIViewController & ProfileViewControllerProto
         view.addSubview(label)
         descriptionLabel.leadingAnchor.constraint(equalTo: loginNameLabel.leadingAnchor).isActive = true
         descriptionLabel.topAnchor.constraint(equalTo: loginNameLabel.bottomAnchor, constant: 8).isActive = true
+    }
+    
+    deinit {
+        if let observer = profileImageServiceObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+
+}
+
+extension ProfileViewController: ProfileViewControllerProtocol {
+    func updateProfileDetails(profile: Any) {
+        let profile = profile as? Profile
+        guard let profile else { return }
+        DispatchQueue.main.async { [self] in
+            userNameLabel.text = "\(profile.firstName) \(profile.lastName)"
+            loginNameLabel.text = "@\(profile.username)"
+            descriptionLabel.text = profile.bio
+        }
+    }
+    
+    func updateAvatar(url: URL) {
+        let processor = RoundCornerImageProcessor(cornerRadius: 35, targetSize: CGSize(width: 70, height: 70), backgroundColor: .clear)
+        imageView.kf.setImage(with: url, placeholder: UIImage(named: "Placeholder.png"), options: [.processor(processor)]) { _ in
+            self.imageView.backgroundColor = .clear
+            self.imageView.layer.masksToBounds = true
+        }
+    }
+    
+    func showLogoutAlert() {
+        let alert = UIAlertController(title: "Пока, пока!", message: "Уверены, что хотите выйти?", preferredStyle: .alert)
+        let logoutAction = UIAlertAction(title: "Да", style: .destructive) { [weak self] _ in
+            self?.presenter?.confirmLogout()
+        }
+        let cancelAction = UIAlertAction(title: "Нет", style: .cancel)
+        alert.addAction(logoutAction)
+        alert.addAction(cancelAction)
+        self.present(alert, animated: true)
     }
 }
