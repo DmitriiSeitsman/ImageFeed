@@ -1,6 +1,16 @@
 import UIKit
 
-final class ImagesListService {
+protocol ImagesListServiceProtocol {
+    var task: URLSessionTask? { get set }
+    var photosFull: [Photo] { get set }
+
+    func fetchPhotosNextPage(handler: @escaping (Result<[photoPackResponse], Error>) -> Void)
+    func convertPhotosStruct(response: photoPackResponse) -> Photo
+    func changeLike(photoId: String, isLike: Bool, _ handler: @escaping (Result<[Photo], Error>) -> Void)
+    func clearData()
+}
+
+final class ImagesListService: ImagesListServiceProtocol {
     var task: URLSessionTask?
     var photosFull: [Photo] = []
     

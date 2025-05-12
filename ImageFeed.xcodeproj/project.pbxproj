@@ -11,6 +11,7 @@
 		B815E1182DAD8E0800CED262 /* SwiftKeychainWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = B815E1172DAD8E0800CED262 /* SwiftKeychainWrapper */; };
 		B83144D62DA01167000EB66D /* ProfileService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B83144D52DA01161000EB66D /* ProfileService.swift */; };
 		B8412EF62DCD41EA000BDACC /* ProfileViewPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8412EF52DCD41E0000BDACC /* ProfileViewPresenter.swift */; };
+		B84130402DD269D5000BDACC /* ImageListViewPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B841303F2DD269C8000BDACC /* ImageListViewPresenter.swift */; };
 		B84CEFD72D9C675700C7F249 /* ProgressHUD in Frameworks */ = {isa = PBXBuildFile; productRef = B84CEFD62D9C675700C7F249 /* ProgressHUD */; };
 		B85ADA4F2DA0775A00510BC0 /* ProfileImageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B85ADA4E2DA0775500510BC0 /* ProfileImageService.swift */; };
 		B86246FF2DC169910086F847 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B86246FE2DC169910086F847 /* WebKit.framework */; };
@@ -43,6 +44,7 @@
 /* Begin PBXFileReference section */
 		B83144D52DA01161000EB66D /* ProfileService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileService.swift; sourceTree = "<group>"; };
 		B8412EF52DCD41E0000BDACC /* ProfileViewPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewPresenter.swift; sourceTree = "<group>"; };
+		B841303F2DD269C8000BDACC /* ImageListViewPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageListViewPresenter.swift; sourceTree = "<group>"; };
 		B85ADA4E2DA0775500510BC0 /* ProfileImageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileImageService.swift; sourceTree = "<group>"; };
 		B86246FE2DC169910086F847 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		B86248AE2DC418680086F847 /* ProfileLogoutService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileLogoutService.swift; sourceTree = "<group>"; };
@@ -204,6 +206,7 @@
 		B89D28332D7357C4007E8D77 /* ImagesList */ = {
 			isa = PBXGroup;
 			children = (
+				B841303F2DD269C8000BDACC /* ImageListViewPresenter.swift */,
 				B89D281D2D73567F007E8D77 /* ImagesListViewController.swift */,
 				B89D28312D73578A007E8D77 /* ImagesListCell.swift */,
 			);
@@ -375,6 +378,7 @@
 				B89D29352D764AD1007E8D77 /* ProfileViewController.swift in Sources */,
 				B89D29372D77A4FA007E8D77 /* SingleImageViewController.swift in Sources */,
 				B8E0BAB82DAEFFE0002257E0 /* ProfileServiceResponceBody.swift in Sources */,
+				B84130402DD269D5000BDACC /* ImageListViewPresenter.swift in Sources */,
 				B8E0BAB62DAEFFA6002257E0 /* ProfileImageServiceResponseBody.swift in Sources */,
 				B89D28252D73567F007E8D77 /* ImagesListViewController.swift in Sources */,
 			);
