@@ -97,7 +97,7 @@
                     <navigationItem key="navigationItem" id="OUE-0d-0ZK"/>
                     <connections>
                         <outlet property="tableView" destination="aQW-fx-oEm" id="s0i-SN-aeD"/>
-                        <segue destination="BdJ-Zs-f48" kind="presentation" identifier="ShowSingleImage" id="1vd-1J-f3c"/>
+                        <segue destination="BdJ-Zs-f48" kind="show" identifier="ShowSingleImage" id="cFI-5V-9Ou"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
@@ -135,6 +135,7 @@
                             </imageView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="yQS-Rh-tKl">
                                 <rect key="frame" x="16" y="724" width="382" height="48"/>
+                                <accessibility key="accessibilityConfiguration" identifier="Authenticate"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="48" id="fQH-NF-FfI"/>
                                 </constraints>
@@ -214,7 +215,7 @@
         <!--Navigation Controller-->
         <scene sceneID="hkZ-Ad-5dJ">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="y1e-Nr-2fu" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="ShowSingleImage" automaticallyAdjustsScrollViewInsets="NO" useStoryboardIdentifierAsRestorationIdentifier="YES" id="y1e-Nr-2fu" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" title="" image="tab_editorial_active" id="HYa-tK-ddp"/>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="2m3-Tw-V6c">
@@ -237,7 +238,7 @@
         <!--Single Image View Controller-->
         <scene sceneID="c2s-iJ-uwX">
             <objects>
-                <viewController modalPresentationStyle="fullScreen" id="BdJ-Zs-f48" customClass="SingleImageViewController" customModule="ImageFeed" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="SingleImageViewController" modalPresentationStyle="fullScreen" useStoryboardIdentifierAsRestorationIdentifier="YES" id="BdJ-Zs-f48" customClass="SingleImageViewController" customModule="ImageFeed" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="C46-uB-uhw">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -246,7 +247,8 @@
                                 <rect key="frame" x="-0.6028169014082323" y="0.51830985932929252" width="413" height="896"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jGd-Ra-mmM">
-                                        <rect key="frame" x="8" y="30" width="48" height="48"/>
+                                        <rect key="frame" x="8" y="30.5" width="48" height="48"/>
+                                        <accessibility key="accessibilityConfiguration" identifier="BackButton"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="48" id="2Hi-y4-ob2"/>
                                             <constraint firstAttribute="width" constant="48" id="kqy-gi-RfD"/>
@@ -258,7 +260,7 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="g0n-T5-KGb">
-                                        <rect key="frame" x="182" y="816.5" width="50" height="50"/>
+                                        <rect key="frame" x="182" y="691" width="50" height="50"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="50" id="mvU-MR-yP4"/>
                                             <constraint firstAttribute="height" constant="50" id="s73-uM-weg"/>

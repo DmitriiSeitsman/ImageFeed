@@ -10,6 +10,11 @@ final class ImagesListViewPresenterTests: XCTestCase {
         var showLikeErrorAlertCalled = false
         var insertedIndexPaths: [IndexPath] = []
         
+        func cellAt(indexPath: IndexPath) -> ImagesListCell? {
+            return nil
+        }
+
+        
         func reloadRows(at indexPaths: [IndexPath]) {
             reloadRowsCalled = true
         }

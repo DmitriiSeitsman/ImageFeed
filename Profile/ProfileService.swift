@@ -29,10 +29,15 @@ final class ProfileService: ProfileServiceProtocol {
         let task = session.data(for: request) { [weak self] result in
                 switch result {
                 case .success(let data):
-                    switch ProfileService().decodeProfile(data) {
+                    switch self?.decodeProfile(data) {
                     case .success(let response):
                         self?.usernameInStorage = response.username ?? ""
-                        let result = ProfileService().convertStruct(profile: response)
+                        let result = self?.convertStruct(profile: response)
+                        guard let result = result else {
+                            completion(.failure(AuthServiceError.invalidRequest))
+                            return
+                        }
+
                         self?.profile = result
                         print("(func fetchProfile) USERNAME IN STORAGE:", self?.usernameInStorage ?? "USERNAME DIDN't SAVED")
                         ProfileImageService.shared.fetchProfileImageURL(authToken: authToken, username: self?.usernameInStorage) { _ in }
@@ -40,6 +45,8 @@ final class ProfileService: ProfileServiceProtocol {
                     case .failure(let error):
                         print("func fetchProfile error: \(String(describing: error))")
                         completion(.failure(error))
+                    case .none:
+                        print(#function, "Decoding failed")
                     }
                 case .failure(let error):
                     print("func fetchProfile error: \(String(describing: error))")
@@ -81,6 +88,7 @@ final class ProfileService: ProfileServiceProtocol {
         guard let url = URL(string: "https://api.unsplash.com/me") else { return nil }
         var request = URLRequest(url: url)
         if let authToken = authToken {
+            print(">>AUTH TOKEN: \(authToken)")
             request.httpMethod = "GET"
             request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
         }

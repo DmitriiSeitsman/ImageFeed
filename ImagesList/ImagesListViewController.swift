@@ -6,6 +6,7 @@ protocol ImagesListViewControllerProtocol: AnyObject {
     func reloadRows(at indexPaths: [IndexPath])
     func insertRows(at indexPaths: [IndexPath])
     func showLikeErrorAlert()
+    func cellAt(indexPath: IndexPath) -> ImagesListCell?
 }
 
 final class ImagesListViewController: UIViewController {
@@ -21,6 +22,7 @@ final class ImagesListViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.accessibilityIdentifier = "ImagesListView"
         presenter?.viewDidLoad()
         tableView.dataSource = self
         tableView.delegate = self
@@ -52,6 +54,7 @@ extension ImagesListViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         presenter?.didSelectCell(at: indexPath)
+        tableView.deselectRow(at: indexPath, animated: true)
         performSegue(withIdentifier: showSingleImageSegueIdentifier, sender: indexPath)
     }
 }
@@ -89,8 +92,14 @@ extension ImagesListViewController: ImagesListCellDelegate {
 }
 
 extension ImagesListViewController: ImagesListViewControllerProtocol {
+    func cellAt(indexPath: IndexPath) -> ImagesListCell? {
+        tableView.cellForRow(at: indexPath) as? ImagesListCell
+    }
+
     func reloadRows(at indexPaths: [IndexPath]) {
         tableView.reloadRows(at: indexPaths, with: .automatic)
+        tableView.layoutIfNeeded()
+        RunLoop.current.run(until: Date().addingTimeInterval(0.1))
     }
     
     func insertRows(at indexPaths: [IndexPath]) {

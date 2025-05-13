@@ -24,6 +24,7 @@ final class ProfileViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.accessibilityIdentifier = "ProfileView"
         presenter?.viewDidLoad()
         profileImageServiceObserver = NotificationCenter.default
             .addObserver(
@@ -72,6 +73,8 @@ final class ProfileViewController: UIViewController {
         view.addSubview(button)
         button.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16).isActive = true
         button.centerYAnchor.constraint(equalTo: imageView.centerYAnchor).isActive = true
+        button.accessibilityIdentifier = "LogoutButton"
+
     }
     
     private func configureuserNameLabel(_ label: UILabel, text: String, fontSize: CGFloat, color: UIColor) {

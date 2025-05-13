@@ -15,6 +15,7 @@ final class TabBarController: UITabBarController {
             image: UIImage(named: "tab_editorial_active"),
             selectedImage: nil
         )
+        imagesListViewController.tabBarItem.accessibilityIdentifier = "FeedTab"
         
         let profileViewController = ProfileViewController()
         let presenter = ProfileViewPresenter(view: profileViewController)
@@ -24,8 +25,10 @@ final class TabBarController: UITabBarController {
             image: UIImage(named: "tab_profile_active"),
             selectedImage: nil
         )
+        profileViewController.tabBarItem.accessibilityIdentifier = "ProfileTab"
         profileViewController.view.backgroundColor = .ypBlack
         
         self.viewControllers = [imagesListViewController, profileViewController]
     }
 }
+

@@ -57,12 +57,15 @@ final class ImagesListViewPresenter: ImagesListViewPresenterProtocol {
         }
         
         cell.dateLabel.text = photo.createdAt.map { dateFormatter.string(from: $0) } ?? ""
-        let likeImage = photo.isLiked ? UIImage(resource: .likeButtonOn) : UIImage(resource: .likeButtonOff)
-        cell.likeButton.setImage(likeImage, for: .normal)
+        cell.setIsLiked(photo.isLiked)
+        
     }
     
     func willDisplayCell(at indexPath: IndexPath) {
         if indexPath.row == photos.count - 1 {
+            if ProcessInfo.processInfo.arguments.contains("UI-TESTING") {
+                return
+            }
             loadPhotos()
         }
     }
@@ -74,29 +77,31 @@ final class ImagesListViewPresenter: ImagesListViewPresenterProtocol {
     func didTapLike(_ cell: ImagesListCell, at indexPath: IndexPath) {
         let photo = photos[indexPath.row]
         let newLikeState = !photo.isLiked
-        
+
         ProgressHUD.animate()
         cell.likeButton.isUserInteractionEnabled = false
         cell.isUserInteractionEnabled = false
-        
+
         imagesListService.changeLike(photoId: photo.id, isLike: newLikeState) { [weak self] result in
             DispatchQueue.main.async {
+                guard let self else { return }
+
+                ProgressHUD.dismiss()
+                cell.likeButton.isUserInteractionEnabled = true
+                cell.isUserInteractionEnabled = true
+
                 switch result {
                 case .success:
                     print("LIKE CHANGED")
-                    ProgressHUD.dismiss()
-                    cell.likeButton.isUserInteractionEnabled = true
-                    cell.isUserInteractionEnabled = true
-                    self?.view?.reloadRows(at: [indexPath])
+                    cell.setIsLiked(newLikeState)
+                    self.view?.reloadRows(at: [indexPath])
                 case .failure:
                     print("LIKE WAS NOT CHANGED")
-                    ProgressHUD.dismiss()
-                    cell.likeButton.isUserInteractionEnabled = true
-                    cell.isUserInteractionEnabled = true
-                    self?.view?.showLikeErrorAlert()
+                    self.view?.showLikeErrorAlert()
                 }
             }
         }
+
         imagesListService.task = nil
     }
     

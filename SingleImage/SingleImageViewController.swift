@@ -3,7 +3,7 @@ import Kingfisher
 import ProgressHUD
 
 final class SingleImageViewController: UIViewController {
-        
+    
     @IBOutlet private var imageView: UIImageView!
     @IBOutlet private var scrollView: UIScrollView!
     
@@ -16,7 +16,7 @@ final class SingleImageViewController: UIViewController {
             rescaleAndCenterImageInScrollView(image: image)
         }
     }
-
+    
     var url: URL?
     
     private var scrollViewVisibleSize: CGSize {
@@ -26,7 +26,7 @@ final class SingleImageViewController: UIViewController {
         let height = scrollViewSize.height - contentInset.top - contentInset.bottom
         return CGSize(width:width, height:height)
     }
-
+    
     private var scrollViewCenter: CGPoint {
         let scrollViewSize = self.scrollViewVisibleSize
         return CGPoint(x: scrollViewSize.width / 2.0,
@@ -35,6 +35,7 @@ final class SingleImageViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         scrollView.sendSubviewToBack(imageView)
         scrollView.minimumZoomScale = 0.1
         scrollView.maximumZoomScale = 1.25
@@ -48,7 +49,7 @@ final class SingleImageViewController: UIViewController {
                 print("Task done for \(value.source.url!)")
                 self.imageView.subviews.last?.removeFromSuperview()
                 ProgressHUD.dismiss()
-
+                
             case .failure(let error):
                 print("Job failed: \(error.localizedDescription)")
                 DispatchQueue.main.async {
@@ -58,10 +59,14 @@ final class SingleImageViewController: UIViewController {
                 }
             }
         }
-    
+        
         guard let image = imageView.image else { return }
         imageView.frame.size = image.size
         rescaleAndCenterImageInScrollView(image: image)
+    }
+    
+    @objc private func didTapBack() {
+        navigationController?.popViewController(animated: true)
     }
     
     func scrollViewDidZoom(_ scrollView: UIScrollView) {
@@ -110,21 +115,21 @@ final class SingleImageViewController: UIViewController {
         guard let image = imageView.image else {
             return
         }
-
+        
         let imgViewSize = imageView.frame.size
         let imageSize = image.size
-
+        
         var realImgSize: CGSize
         if imageSize.width / imageSize.height > imgViewSize.width / imgViewSize.height {
             realImgSize = CGSize(width: imgViewSize.width,height: imgViewSize.width / imageSize.width * imageSize.height)
         } else {
             realImgSize = CGSize(width: imgViewSize.height / imageSize.height * imageSize.width, height: imgViewSize.height)
         }
-
+        
         var frame = CGRect.zero
         frame.size = realImgSize
         imageView.frame = frame
-
+        
         let screenSize  = scrollView.frame.size
         let offx = screenSize.width > realImgSize.width ? (screenSize.width - realImgSize.width) / 2 : 0
         let offy = screenSize.height > realImgSize.height ? (screenSize.height - realImgSize.height) / 2 : 0
@@ -132,22 +137,22 @@ final class SingleImageViewController: UIViewController {
                                                left: offx,
                                                bottom: offy,
                                                right: offx)
-
+        
         let scrollViewSize = scrollViewVisibleSize
-
+        
         var imageCenter = CGPoint(x: scrollView.contentSize.width / 2.0,
                                   y: scrollView.contentSize.height / 2.0)
-
+        
         let center = scrollViewCenter
-
+        
         if scrollView.contentSize.width < scrollViewSize.width {
             imageCenter.x = center.x
         }
-
+        
         if scrollView.contentSize.height < scrollViewSize.height {
             imageCenter.y = center.y
         }
-
+        
         imageView.center = imageCenter
     }
     
