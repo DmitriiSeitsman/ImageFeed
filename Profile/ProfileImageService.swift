@@ -71,7 +71,7 @@ final class ProfileImageService: ProfileImageServiceProtocol {
     }
     
     private func makeImageRequest(authToken: String?, username: String?) -> URLRequest? {
-         guard let url = URL(string: "https://api.unsplash.com/users/\(username ?? "no username in storage")") else { return nil }
+        guard let url = URL(string: "https://api.unsplash.com/users/\(username ?? "no username in storage")") else { return nil }
         var request = URLRequest(url: url)
         if let authToken = authToken {
             request.httpMethod = "GET"

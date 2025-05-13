@@ -33,7 +33,7 @@ final class ProfileViewControllerTests: XCTestCase {
         sut.loadViewIfNeeded()
         XCTAssertTrue((sut.presenter as! MockPresenter).viewDidLoadCalled)
     }
-
+    
     func testLogoutButtonTriggersPresenter() {
         let sut = makeSUT()
         sut.loadViewIfNeeded()
@@ -41,7 +41,7 @@ final class ProfileViewControllerTests: XCTestCase {
         button?.sendActions(for: .touchUpInside)
         XCTAssertTrue((sut.presenter as! MockPresenter).didTapLogoutCalled)
     }
-
+    
     func testUpdateProfileDetailsUpdatesUI() {
         let sut = makeSUT()
         sut.loadViewIfNeeded()
@@ -56,26 +56,26 @@ final class ProfileViewControllerTests: XCTestCase {
         XCTAssertEqual(sut.userNameLabel.text, "Екатерина Новикова")
         XCTAssertEqual(sut.loginNameLabel.text, "@ekaterinanovikova")
         XCTAssertEqual(sut.descriptionLabel.text, "Hello World!")
-
+        
     }
-
+    
     func testShowLogoutAlertPresentsAlert() {
         let sut = makeSUT()
         sut.loadViewIfNeeded()
-
+        
         let window = UIWindow()
         window.rootViewController = sut
         window.makeKeyAndVisible()
-
+        
         sut.showLogoutAlert()
-
+        
         RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.1))
-
+        
         let presented = sut.presentedViewController as? UIAlertController
         XCTAssertNotNil(presented)
         XCTAssertEqual(presented?.title, "Пока, пока!")
     }
-
+    
     // MARK: - Helpers
     private func makeSUT() -> ProfileViewController {
         let vc = ProfileViewController()

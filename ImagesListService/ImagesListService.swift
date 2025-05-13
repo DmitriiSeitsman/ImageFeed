@@ -3,7 +3,7 @@ import UIKit
 protocol ImagesListServiceProtocol {
     var task: URLSessionTask? { get set }
     var photosFull: [Photo] { get set }
-
+    
     func fetchPhotosNextPage(handler: @escaping (Result<[photoPackResponse], Error>) -> Void)
     func convertPhotosStruct(response: photoPackResponse) -> Photo
     func changeLike(photoId: String, isLike: Bool, _ handler: @escaping (Result<[Photo], Error>) -> Void)
@@ -71,7 +71,6 @@ final class ImagesListService: ImagesListServiceProtocol {
     
     
     func convertPhotosStruct (response: photoPackResponse) -> Photo {
-        
         let date: Date? = dateFormatter.date(from: response.createdAt)
         return Photo(
             id: response.id,
@@ -90,19 +89,19 @@ final class ImagesListService: ImagesListServiceProtocol {
             task?.cancel()
             return
         }
-
+        
         let request: URLRequest?
         if isLike {
             request = likeOn(authToken: tokenInStorage, photoId: photoId)
         } else {
             request = likeOff(authToken: tokenInStorage, photoId: photoId)
         }
-
+        
         guard let finalRequest = request else {
             print(">>> UNABLE TO MAKE LIKE REQUEST <<<")
             return
         }
-
+        
         let session = URLSession.shared
         let task = session.data(for: finalRequest) { [weak self] result in
             DispatchQueue.main.async {
@@ -116,7 +115,7 @@ final class ImagesListService: ImagesListServiceProtocol {
                 }
             }
         }
-
+        
         self.task = task
         task.resume()
     }
@@ -133,25 +132,25 @@ final class ImagesListService: ImagesListServiceProtocol {
     }
     
     private func changePhotoInArray(photoId: String) {
-            if let index = self.photosFull.firstIndex(where: { $0.id == photoId }) {
-                
-                let photo = self.photosFull[index]
-                
-                let newPhoto: [Photo] = [Photo(
-                    id: photo.id,
-                    size: photo.size,
-                    createdAt: photo.createdAt,
-                    welcomeDescription: photo.welcomeDescription,
-                    thumbImageURL: photo.thumbImageURL,
-                    largeImageURL: photo.largeImageURL,
-                    isLiked: !photo.isLiked
-                )]
-                
-                self.photosFull.remove(at: index)
-                self.photosFull.insert(contentsOf: newPhoto, at: index)
-                print("OLD LIKE STATUS: /","ID:", photo.id, "/ PROPERTY:", photo.isLiked)
-                print("NEW LIKE STATUS: /","ID:",self.photosFull[index].id, "/ PROPERTY:", self.photosFull[index].isLiked)
-            }
+        if let index = self.photosFull.firstIndex(where: { $0.id == photoId }) {
+            
+            let photo = self.photosFull[index]
+            
+            let newPhoto: [Photo] = [Photo(
+                id: photo.id,
+                size: photo.size,
+                createdAt: photo.createdAt,
+                welcomeDescription: photo.welcomeDescription,
+                thumbImageURL: photo.thumbImageURL,
+                largeImageURL: photo.largeImageURL,
+                isLiked: !photo.isLiked
+            )]
+            
+            self.photosFull.remove(at: index)
+            self.photosFull.insert(contentsOf: newPhoto, at: index)
+            print("OLD LIKE STATUS: /","ID:", photo.id, "/ PROPERTY:", photo.isLiked)
+            print("NEW LIKE STATUS: /","ID:",self.photosFull[index].id, "/ PROPERTY:", self.photosFull[index].isLiked)
+        }
         return
     }
     

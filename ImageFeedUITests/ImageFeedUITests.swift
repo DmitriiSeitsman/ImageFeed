@@ -14,7 +14,7 @@ class Image_FeedUITests: XCTestCase {
         app.launch()
         
         if app.otherElements["ImagesListView"].waitForExistence(timeout: 5) {
-
+            
             let profileTab = app.tabBars.buttons["ProfileTab"]
             XCTAssertTrue(profileTab.waitForExistence(timeout: 3))
             profileTab.tap()
@@ -40,14 +40,14 @@ class Image_FeedUITests: XCTestCase {
         XCTAssertTrue(loginTextField.waitForExistence(timeout: 5))
         
         loginTextField.tap()
-        loginTextField.typeText("seytsman@gmail.com")
+        loginTextField.typeText("YOUREMAIL@HERE.COM")
         webView.swipeUp()
         
         let passwordTextField = webView.descendants(matching: .secureTextField).element
         XCTAssertTrue(passwordTextField.waitForExistence(timeout: 5))
         passwordTextField.tap()
         
-        UIPasteboard.general.string = "DiMa320989MaShA"
+        UIPasteboard.general.string = "YOURPASSWORDHERE"
         passwordTextField.press(forDuration: 1.0)
         
         let pasteMenuItem = app.menuItems["Paste"]
@@ -55,6 +55,7 @@ class Image_FeedUITests: XCTestCase {
         pasteMenuItem.tap()
         
         webView.buttons["Login"].tap()
+        XCTAssertTrue(webView.waitForExistence(timeout: 5))
         
         let tablesQuery = app.tables
         _ = tablesQuery.children(matching: .cell).element(boundBy: 0)
@@ -88,7 +89,7 @@ class Image_FeedUITests: XCTestCase {
         let likeOnButton = cellAfterLike.buttons["like button on"]
         if likeOnButton.exists {
             likeOnButton.tap()
-            
+
             let updatedCellAfterDislike = tablesQuery.cells.element(boundBy: 1)
             let updatedLikeOffButton = updatedCellAfterDislike.buttons["like button off"]
             XCTAssertTrue(updatedLikeOffButton.waitForExistence(timeout: 5), "Кнопка не переключилась обратно в 'не лайк'")
@@ -112,6 +113,37 @@ class Image_FeedUITests: XCTestCase {
     
     
     func testProfile() throws {
-        // тестируем сценарий профиля
+        let app = XCUIApplication()
+        app.launchArguments.append("UI-TESTING")
+        app.launch()
+        
+        XCTAssertTrue(app.otherElements["ImagesListView"].waitForExistence(timeout: 5), "Экран ленты не загрузился")
+        
+        let profileTab = app.tabBars.buttons["ProfileTab"]
+        XCTAssertTrue(profileTab.waitForExistence(timeout: 3), "Вкладка профиля не найдена")
+        profileTab.tap()
+        
+        let nameLabel = app.staticTexts["userName"]
+        let loginLabel = app.staticTexts["userLoginName"]
+        let descriptionLabel = app.staticTexts["ProfileDescription"]
+        let avatarImage = app.images["ProfileAvatar"]
+        
+        XCTAssertTrue(nameLabel.waitForExistence(timeout: 3), "Имя пользователя не отображается")
+        XCTAssertTrue(loginLabel.exists, "Логин не отображается")
+        XCTAssertTrue(descriptionLabel.exists, "Описание не отображается")
+        XCTAssertTrue(avatarImage.exists, "Аватар не отображается")
+        
+        let logoutButton = app.buttons["LogoutButton"]
+        XCTAssertTrue(logoutButton.waitForExistence(timeout: 3), "Кнопка выхода не найдена")
+        logoutButton.tap()
+        
+        let alert = app.alerts["Пока, пока!"]
+        XCTAssertTrue(alert.waitForExistence(timeout: 3), "Алерт подтверждения выхода не появился")
+        alert.buttons["Да"].tap()
+        
+        let authButton = app.buttons["Authenticate"]
+        XCTAssertTrue(authButton.waitForExistence(timeout: 5), "Экран авторизации не появился после выхода")
     }
+    
+    
 }

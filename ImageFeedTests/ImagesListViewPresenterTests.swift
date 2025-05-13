@@ -13,7 +13,6 @@ final class ImagesListViewPresenterTests: XCTestCase {
         func cellAt(indexPath: IndexPath) -> ImagesListCell? {
             return nil
         }
-
         
         func reloadRows(at indexPaths: [IndexPath]) {
             reloadRowsCalled = true

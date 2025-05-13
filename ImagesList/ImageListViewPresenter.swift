@@ -77,19 +77,19 @@ final class ImagesListViewPresenter: ImagesListViewPresenterProtocol {
     func didTapLike(_ cell: ImagesListCell, at indexPath: IndexPath) {
         let photo = photos[indexPath.row]
         let newLikeState = !photo.isLiked
-
+        
         ProgressHUD.animate()
         cell.likeButton.isUserInteractionEnabled = false
         cell.isUserInteractionEnabled = false
-
+        
         imagesListService.changeLike(photoId: photo.id, isLike: newLikeState) { [weak self] result in
             DispatchQueue.main.async {
                 guard let self else { return }
-
+                
                 ProgressHUD.dismiss()
                 cell.likeButton.isUserInteractionEnabled = true
                 cell.isUserInteractionEnabled = true
-
+                
                 switch result {
                 case .success:
                     print("LIKE CHANGED")
@@ -101,7 +101,7 @@ final class ImagesListViewPresenter: ImagesListViewPresenterProtocol {
                 }
             }
         }
-
+        
         imagesListService.task = nil
     }
     

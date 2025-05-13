@@ -95,7 +95,7 @@ extension ImagesListViewController: ImagesListViewControllerProtocol {
     func cellAt(indexPath: IndexPath) -> ImagesListCell? {
         tableView.cellForRow(at: indexPath) as? ImagesListCell
     }
-
+    
     func reloadRows(at indexPaths: [IndexPath]) {
         tableView.reloadRows(at: indexPaths, with: .automatic)
         tableView.layoutIfNeeded()
