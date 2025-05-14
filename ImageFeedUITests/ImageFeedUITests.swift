@@ -1,65 +1,62 @@
 import XCTest
 
-class Image_FeedUITests: XCTestCase {
+final class ImageFeedUITests: XCTestCase {
     private let app = XCUIApplication() // переменная приложения
     
     override func setUpWithError() throws {
         continueAfterFailure = false // настройка выполнения тестов, которая прекратит выполнения тестов, если в тесте что-то пошло не так
-        
-        app.launch() // запускаем приложение перед каждым тестом
     }
     
     func testAuth() throws {
         let app = XCUIApplication()
         app.launch()
         
-        if app.otherElements["ImagesListView"].waitForExistence(timeout: 5) {
+        let imagesListView = app.otherElements["ImagesListView"]
+        let authButton = app.buttons["Authenticate"]
+        
+        if imagesListView.waitForExistence(timeout: 5) {
+            print("Уже авторизованы — выходим из аккаунта")
             
             let profileTab = app.tabBars.buttons["ProfileTab"]
-            XCTAssertTrue(profileTab.waitForExistence(timeout: 3))
+            XCTAssertTrue(profileTab.waitForExistence(timeout: 2))
             profileTab.tap()
             
             let logoutButton = app.buttons["LogoutButton"]
-            XCTAssertTrue(logoutButton.waitForExistence(timeout: 3))
+            XCTAssertTrue(logoutButton.waitForExistence(timeout: 2))
             logoutButton.tap()
             
             let alert = app.alerts["Пока, пока!"]
-            XCTAssertTrue(alert.waitForExistence(timeout: 3))
+            XCTAssertTrue(alert.waitForExistence(timeout: 2))
             alert.buttons["Да"].tap()
+        } else {
+            print("Не авторизованы — начинаем логин")
         }
         
-        let authButton = app.buttons["Authenticate"]
-        XCTAssertTrue(authButton.waitForExistence(timeout: 5))
+        XCTAssertTrue(authButton.waitForExistence(timeout: 3))
         authButton.tap()
         
         let webView = app.webViews["UnsplashWebView"]
-        
         XCTAssertTrue(webView.waitForExistence(timeout: 5))
         
-        let loginTextField = webView.descendants(matching: .textField).element
+        let loginTextField = webView.textFields.element
         XCTAssertTrue(loginTextField.waitForExistence(timeout: 5))
-        
         loginTextField.tap()
         loginTextField.typeText("YOUREMAIL@HERE.COM")
+        
         webView.swipeUp()
         
-        let passwordTextField = webView.descendants(matching: .secureTextField).element
+        let passwordTextField = webView.secureTextFields.element
         XCTAssertTrue(passwordTextField.waitForExistence(timeout: 5))
         passwordTextField.tap()
+        sleep(1)
+        passwordTextField.typeText("YOURPASSWORD")
         
-        UIPasteboard.general.string = "YOURPASSWORDHERE"
-        passwordTextField.press(forDuration: 1.0)
+        tapLoginButton(in: webView)
         
-        let pasteMenuItem = app.menuItems["Paste"]
-        XCTAssertTrue(pasteMenuItem.waitForExistence(timeout: 2))
-        pasteMenuItem.tap()
-        
-        webView.buttons["Login"].tap()
-        XCTAssertTrue(webView.waitForExistence(timeout: 5))
-        
-        let tablesQuery = app.tables
-        _ = tablesQuery.children(matching: .cell).element(boundBy: 0)
+        let feedLoaded = imagesListView.waitForExistence(timeout: 10)
+        XCTAssertTrue(feedLoaded, "Лента не появилась после логина")
     }
+    
     
     func testFeed() throws {
         let app = XCUIApplication()
@@ -89,7 +86,7 @@ class Image_FeedUITests: XCTestCase {
         let likeOnButton = cellAfterLike.buttons["like button on"]
         if likeOnButton.exists {
             likeOnButton.tap()
-
+            
             let updatedCellAfterDislike = tablesQuery.cells.element(boundBy: 1)
             let updatedLikeOffButton = updatedCellAfterDislike.buttons["like button off"]
             XCTAssertTrue(updatedLikeOffButton.waitForExistence(timeout: 5), "Кнопка не переключилась обратно в 'не лайк'")
@@ -144,6 +141,26 @@ class Image_FeedUITests: XCTestCase {
         let authButton = app.buttons["Authenticate"]
         XCTAssertTrue(authButton.waitForExistence(timeout: 5), "Экран авторизации не появился после выхода")
     }
+    // MARK: - Helpers
+    func tapLoginButton(in webView: XCUIElement, timeout: TimeInterval = 5) {
+        let exactLoginButton = webView.buttons["Login"]
+        
+        if exactLoginButton.exists {
+            exactLoginButton.tap()
+            print("Нажали на кнопку 'Login' по точному идентификатору")
+        } else if let fallbackButton = webView.buttons.allElementsBoundByIndex.first(where: {
+            $0.label.lowercased().contains("log")
+        }) {
+            fallbackButton.tap()
+            print("Нажали на кнопку, содержащую 'log' в label: \(fallbackButton.label)")
+        } else {
+            let firstButton = webView.buttons.element(boundBy: 0)
+            XCTAssertTrue(firstButton.waitForExistence(timeout: timeout), "Резервная кнопка входа не найдена")
+            firstButton.tap()
+            print("Нажали на первую найденную кнопку как последний вариант")
+        }
+    }
+
     
     
 }
