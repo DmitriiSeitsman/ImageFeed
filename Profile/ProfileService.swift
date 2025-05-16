@@ -1,6 +1,10 @@
 import UIKit
 
-final class ProfileService {
+protocol ProfileServiceProtocol {
+    var profile: Profile? { get }
+}
+
+final class ProfileService: ProfileServiceProtocol {
     static let shared = ProfileService()
     private let urlSession = URLSession.shared
     private var task: URLSessionTask?
@@ -23,24 +27,31 @@ final class ProfileService {
         let session = URLSession.shared
         
         let task = session.data(for: request) { [weak self] result in
-                switch result {
-                case .success(let data):
-                    switch ProfileService().decodeProfile(data) {
-                    case .success(let response):
-                        self?.usernameInStorage = response.username ?? ""
-                        let result = ProfileService().convertStruct(profile: response)
-                        self?.profile = result
-                        print("(func fetchProfile) USERNAME IN STORAGE:", self?.usernameInStorage ?? "USERNAME DIDN't SAVED")
-                        ProfileImageService.shared.fetchProfileImageURL(authToken: authToken, username: self?.usernameInStorage) { _ in }
-                        completion(.success(result))
-                    case .failure(let error):
-                        print("func fetchProfile error: \(String(describing: error))")
-                        completion(.failure(error))
+            switch result {
+            case .success(let data):
+                switch self?.decodeProfile(data) {
+                case .success(let response):
+                    self?.usernameInStorage = response.username ?? ""
+                    let result = self?.convertStruct(profile: response)
+                    guard let result = result else {
+                        completion(.failure(AuthServiceError.invalidRequest))
+                        return
                     }
+                    
+                    self?.profile = result
+                    print("(func fetchProfile) USERNAME IN STORAGE:", self?.usernameInStorage ?? "USERNAME DIDN't SAVED")
+                    ProfileImageService.shared.fetchProfileImageURL(authToken: authToken, username: self?.usernameInStorage) { _ in }
+                    completion(.success(result))
                 case .failure(let error):
                     print("func fetchProfile error: \(String(describing: error))")
                     completion(.failure(error))
+                case .none:
+                    print(#function, "Decoding failed")
                 }
+            case .failure(let error):
+                print("func fetchProfile error: \(String(describing: error))")
+                completion(.failure(error))
+            }
         }
         self.task = task
         task .resume()
@@ -77,6 +88,7 @@ final class ProfileService {
         guard let url = URL(string: "https://api.unsplash.com/me") else { return nil }
         var request = URLRequest(url: url)
         if let authToken = authToken {
+            print(">>AUTH TOKEN: \(authToken)")
             request.httpMethod = "GET"
             request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
         }

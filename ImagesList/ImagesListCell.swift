@@ -12,12 +12,19 @@ final class ImagesListCell: UITableViewCell {
         super.prepareForReuse()
         guard let imageView = cellImage else { return }
         imageView.kf.cancelDownloadTask()
+        likeButton.accessibilityIdentifier = nil
+    }
+    
+    func setIsLiked(_ isLiked: Bool) {
+        let image = isLiked ? UIImage(resource: .likeButtonOn) : UIImage(resource: .likeButtonOff)
+        likeButton.setImage(image, for: .normal)
+        likeButton.accessibilityIdentifier = isLiked ? "like button on" : "like button off"
     }
     
     @IBAction func changeLikeButton(_ sender: Any) {
         delegate?.imageListCellDidTapLike(self)
-
     }
+
 }
 
 protocol ImagesListCellDelegate: AnyObject {

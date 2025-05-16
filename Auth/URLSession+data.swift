@@ -24,6 +24,12 @@ extension URLSession {
                 if 200 ..< 300 ~= statusCode {
                     fulfillCompletionOnTheMainThread(.success(data))
                 } else if 300 <= statusCode {
+                    if statusCode == 500 {
+                        print("unsplash server returned status code \(statusCode), something wrong on their side")
+                        let error = NSError(domain: "com.unsplash.networkError", code: 500, userInfo: nil)
+                        fulfillCompletionOnTheMainThread(.failure(error))
+                        return
+                    }
                     print("Unsplash server returned status code \(statusCode)")
                     fulfillCompletionOnTheMainThread(.failure(NetworkError.httpStatusCode(statusCode)))
                 }

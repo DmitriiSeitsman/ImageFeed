@@ -45,26 +45,26 @@ final class OAuth2Service {
         let session = URLSession.shared
         let task = session.data(for: request) {[weak self] result in
             DispatchQueue.main.async {
-            switch result {
-            case .success(let data):
-                switch OAuth2Service.decode(from: data) {
-                case .success(let response):
-                    self?.oauth2TokenStorage.token = response.accessToken
-                    handler(.success(response.accessToken))
+                switch result {
+                case .success(let data):
+                    switch OAuth2Service.decode(from: data) {
+                    case .success(let response):
+                        self?.oauth2TokenStorage.token = response.accessToken
+                        handler(.success(response.accessToken))
+                    case .failure(let error):
+                        print("func fetchOAuthToken error: \(String(describing: error))")
+                        handler(.failure(error))
+                    }
                 case .failure(let error):
                     print("func fetchOAuthToken error: \(String(describing: error))")
+                    DispatchQueue.main.async {
+                        let alert = UIAlertController(title: "Что-то пошло не так(", message: "Не удалось войти в систему", preferredStyle: .alert)
+                        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                        UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true)
+                    }
                     handler(.failure(error))
                 }
-            case .failure(let error):
-                print("func fetchOAuthToken error: \(String(describing: error))")
-                DispatchQueue.main.async {
-                    let alert = UIAlertController(title: "Что-то пошло не так(", message: "Не удалось войти в систему", preferredStyle: .alert)
-                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                    UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true)
-                }
-                handler(.failure(error))
             }
-        }
         }
         self.task = task
         task .resume()
@@ -89,4 +89,5 @@ final class OAuth2Service {
         request.httpMethod = "POST"
         return request
     }
+    
 }

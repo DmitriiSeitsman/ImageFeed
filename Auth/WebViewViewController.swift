@@ -1,16 +1,21 @@
 import UIKit
 @preconcurrency import WebKit
 
-enum WebViewConstants {
-    static let unsplashAuthorizeURLString = "https://unsplash.com/oauth/authorize"
-}
-
 protocol WebViewViewControllerDelegate: AnyObject {
     func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String)
     func webViewViewControllerDidCancel(_ vc: WebViewViewController)
 }
 
-final class WebViewViewController: UIViewController {
+public protocol WebViewViewControllerProtocol: AnyObject {
+    var presenter: WebViewPresenterProtocol? { get set }
+    func load(request: URLRequest)
+    func setProgressValue(_ newValue: Float)
+    func setProgressHidden(_ isHidden: Bool)
+}
+
+final class WebViewViewController: UIViewController & WebViewViewControllerProtocol {
+    
+    var presenter: WebViewPresenterProtocol?
     
     @IBOutlet private var progressView: UIProgressView!
     @IBOutlet private var webView: WKWebView!
@@ -19,8 +24,13 @@ final class WebViewViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        webView.accessibilityIdentifier = "UnsplashWebView"
         webView.navigationDelegate = self
-        loadAuthView()
+        presenter?.viewDidLoad()
+    }
+    
+    func load(request: URLRequest) {
+        webView.load(request)
     }
     
     private func loadAuthView() {
@@ -41,7 +51,6 @@ final class WebViewViewController: UIViewController {
         
         let request = URLRequest(url: url)
         webView.load(request)
-        updateProgress()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -51,7 +60,6 @@ final class WebViewViewController: UIViewController {
             forKeyPath: #keyPath(WKWebView.estimatedProgress),
             options: .new,
             context: nil)
-        updateProgress()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -61,55 +69,41 @@ final class WebViewViewController: UIViewController {
     
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if keyPath == #keyPath(WKWebView.estimatedProgress) {
-            updateProgress()
+            presenter?.didUpdateProgressValue(webView.estimatedProgress)
         } else {
             super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
         }
     }
     
-    private func updateProgress() {
-        progressView.progress = Float(webView.estimatedProgress)
-        progressView.isHidden = fabs(webView.estimatedProgress - 1.0) <= 0.0001
+    func setProgressValue(_ newValue: Float) {
+        progressView.progress = newValue
     }
+    
+    func setProgressHidden(_ isHidden: Bool) {
+        progressView.isHidden = isHidden
+    }
+    
 }
 
 extension WebViewViewController: WKNavigationDelegate {
-        func webView(
-            _ webView: WKWebView,
-            decidePolicyFor navigationAction: WKNavigationAction,
-            decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
-        ) {
-            if let code = code(from: navigationAction) {
-                delegate?.webViewViewController(self, didAuthenticateWithCode: code)
-                decisionHandler(.cancel)
-            } else {
-                decisionHandler(.allow)
-            }
+    func webView(
+        _ webView: WKWebView,
+        decidePolicyFor navigationAction: WKNavigationAction,
+        decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
+    ) {
+        if let code = code(from: navigationAction) {
+            delegate?.webViewViewController(self, didAuthenticateWithCode: code)
+            decisionHandler(.cancel)
+        } else {
+            decisionHandler(.allow)
         }
+    }
     
     private func code(from navigationAction: WKNavigationAction) -> String? {
-            guard let url = navigationAction.request.url else {
-                return nil
+        if let url = navigationAction.request.url {
+            return presenter?.code(from: url)
         }
-            guard let urlComponents = URLComponents(string: url.absoluteString) else {
-                print ("Could not create URLComponents from \(url.absoluteString)")
-                return nil
-        }
-        print(urlComponents.path)
-        
-        guard urlComponents.path == "/oauth/authorize/native" else {
-            print("URL path does not match expected path: \(urlComponents.path)")
-            return nil
-        }
-            guard let items = urlComponents.queryItems else {
-                print("Missing query parameters")
-                return nil
-        }
-            guard let codeItem = items.first(where: { $0.name == "code" }) else {
-                print("Missing 'code' in query parameters")
-                return nil
-        }
-        print("CODE:", codeItem.value as Any)
-            return codeItem.value
+        return nil
     }
+    
 }

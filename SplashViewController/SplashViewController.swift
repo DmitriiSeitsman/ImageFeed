@@ -7,7 +7,6 @@ final class SplashViewController: UIViewController {
     private let profileService = ProfileService.shared
     private let oauth2Service = OAuth2Service()
     private let oauth2TokenStorage = OAuth2TokenStorage.shared
-    private let profileViewController = ProfileViewController()
     private var usernameInStorage = OAuth2TokenStorage.shared.username
     private var imageView = UIImageView()
     private static var window: UIWindow? {
@@ -84,11 +83,9 @@ extension SplashViewController: AuthViewControllerDelegate {
     
     func authViewController(_ vc: AuthViewController, didAuthenticateWithCode code: String) {
         DispatchQueue.main.async {
-            self.dismiss(animated: true) { [weak self] in
-                guard let self = self else { return }
-                self.fetchOAuthToken(code)
+            self.presentedViewController?.dismiss(animated: true) { [weak self] in
+                self?.fetchOAuthToken(code)
             }
-            
         }
     }
     
@@ -118,7 +115,7 @@ extension SplashViewController: AuthViewControllerDelegate {
                     let alert = UIAlertController(title: "Ошибка", message:
 """
 Не удалось получить данные профиля
-код: \(Error)
+причина: \(Error.localizedDescription)
 """,
                                                   preferredStyle: .alert)
                     alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
