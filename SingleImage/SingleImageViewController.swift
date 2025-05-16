@@ -7,171 +7,172 @@ final class SingleImageViewController: UIViewController {
     @IBOutlet private var imageView: UIImageView!
     @IBOutlet private var scrollView: UIScrollView!
     
-    var image: UIImage? {
-        didSet {
-            guard isViewLoaded, let url else { return }
-            imageView.kf.setImage(with: url)
-            guard let image = imageView.image else { return }
-            imageView.frame.size = image.size
-            rescaleAndCenterImageInScrollView(image: image)
-        }
-    }
-    
+    var image: UIImage?
     var url: URL?
-    
-    private var scrollViewVisibleSize: CGSize {
-        let contentInset = scrollView.contentInset
-        let scrollViewSize = scrollView.bounds.standardized.size
-        let width = scrollViewSize.width - contentInset.left - contentInset.right
-        let height = scrollViewSize.height - contentInset.top - contentInset.bottom
-        return CGSize(width:width, height:height)
-    }
-    
-    private var scrollViewCenter: CGPoint {
-        let scrollViewSize = self.scrollViewVisibleSize
-        return CGPoint(x: scrollViewSize.width / 2.0,
-                       y: scrollViewSize.height / 2.0)
-    }
-    
+
+    private var initialZoomScale: CGFloat = 1.0
+    private let doubleTapZoomScale: CGFloat = 1.5
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        scrollView.sendSubviewToBack(imageView)
-        scrollView.minimumZoomScale = 0.1
-        scrollView.maximumZoomScale = 1.25
-        
+        scrollView.clipsToBounds = true
+        scrollView.delegate = self
+        setupGesture()
+        setupScrollView()
         setPlaceholderImage()
-        
+        loadImage()
+        scrollView.sendSubviewToBack(imageView)
+    }
+
+    private func setupGesture() {
+        let doubleTap = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap))
+        doubleTap.numberOfTapsRequired = 2
+        view.addGestureRecognizer(doubleTap)
+    }
+
+    private func setupScrollView() {
+        scrollView.minimumZoomScale = 0.1
+        scrollView.maximumZoomScale = doubleTapZoomScale
+        scrollView.alwaysBounceVertical = false
+        scrollView.alwaysBounceHorizontal = false
+    }
+
+    private func loadImage() {
         guard let url else { return }
-        imageView.kf.setImage(with: url) { result in
+        
+        ProgressHUD.animate()
+        
+        imageView.kf.setImage(with: url) { [weak self] result in
+            guard let self else { return }
             switch result {
             case .success(let value):
-                print("Task done for \(value.source.url!)")
+                print("Loaded image from \(value.source.url!)")
                 self.imageView.subviews.last?.removeFromSuperview()
                 ProgressHUD.dismiss()
                 
-            case .failure(let error):
-                print("Job failed: \(error.localizedDescription)")
-                DispatchQueue.main.async {
-                    let alert = UIAlertController(title: "Ошибка", message: "Не удалось загрузить изображение", preferredStyle: .alert)
-                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                    UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true)
+                if let image = self.imageView.image {
+                    self.image = value.image
+                    self.rescaleAndCenterImageInScrollView(image: image)
                 }
+            case .failure(let error):
+                print("Image load failed: \(error.localizedDescription)")
+                self.showErrorAlert()
             }
         }
-        
-        guard let image = imageView.image else { return }
-        imageView.frame.size = image.size
-        rescaleAndCenterImageInScrollView(image: image)
     }
-    
-    @objc private func didTapBack() {
-        navigationController?.popViewController(animated: true)
+
+    private func showErrorAlert() {
+        let alert = UIAlertController(title: "Ошибка", message: "Не удалось загрузить изображение", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
-    
-    func scrollViewDidZoom(_ scrollView: UIScrollView) {
-        centerScrollViewContents()
-    }
-    
+
     private func setPlaceholderImage() {
-        ProgressHUD.animate()
-        
         let placeholderImage = UIImage(named: "table_view_placeholder")
-        let placeholderUI = UIImageView(image: placeholderImage)
-        placeholderUI.translatesAutoresizingMaskIntoConstraints = false
-        imageView.addSubview(placeholderUI)
+        let placeholderView = UIImageView(image: placeholderImage)
+        placeholderView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.addSubview(placeholderView)
         
         NSLayoutConstraint.activate([
-            placeholderUI.centerXAnchor.constraint(equalTo: imageView.centerXAnchor),
-            placeholderUI.centerYAnchor.constraint(equalTo: imageView.centerYAnchor),
+            placeholderView.centerXAnchor.constraint(equalTo: imageView.centerXAnchor),
+            placeholderView.centerYAnchor.constraint(equalTo: imageView.centerYAnchor),
         ])
     }
-    
+
+    @objc private func handleDoubleTap() {
+        let currentZoom = scrollView.zoomScale
+        let targetZoom = abs(currentZoom - initialZoomScale) < 0.01 ? doubleTapZoomScale : initialZoomScale
+        let center = view.convert(view.center, to: imageView)
+        
+        let zoomRect = zoomRectForScale(scale: targetZoom, center: center)
+        scrollView.zoom(to: zoomRect, animated: true)
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            self.centerImageIfNeeded()
+        }
+    }
+
+    private func zoomRectForScale(scale: CGFloat, center: CGPoint) -> CGRect {
+        var zoomRect = CGRect.zero
+        let scrollViewSize = scrollView.bounds.size
+        
+        zoomRect.size.width = scrollViewSize.width / scale
+        zoomRect.size.height = scrollViewSize.height / scale
+        zoomRect.origin.x = center.x - zoomRect.size.width / 2.0
+        zoomRect.origin.y = center.y - zoomRect.size.height / 2.0
+
+        return zoomRect
+    }
+
     private func rescaleAndCenterImageInScrollView(image: UIImage) {
-        let minZoomScale = scrollView.minimumZoomScale
-        let maxZoomScale = scrollView.maximumZoomScale
-        view.layoutIfNeeded()
-        let visibleRectSize = scrollView.bounds.size
-        let imageSize = image.size
-        if imageSize.width != 0 && imageSize.height != 0 {
-            let hScale = visibleRectSize.width / imageSize.width
-            let vScale = visibleRectSize.height / imageSize.height
-        } else {
-            let hScale: CGFloat = 1
-            let vScale: CGFloat = 1
-        }
-        let hScale = visibleRectSize.width / imageSize.width
-        let vScale = visibleRectSize.height / imageSize.height
-        let scale = min(maxZoomScale, max(minZoomScale, min(hScale, vScale)))
-        scrollView.setZoomScale(scale, animated: false)
         scrollView.layoutIfNeeded()
-        let newContentSize = scrollView.contentSize
-        let x = (newContentSize.width - visibleRectSize.width) / 2
-        let y = (newContentSize.height - visibleRectSize.height) / 2
-        scrollView.setContentOffset(CGPoint(x: x, y: y), animated: false)
-    }
-    
-    private func centerScrollViewContents() {
-        guard let image = imageView.image else {
-            return
-        }
-        
-        let imgViewSize = imageView.frame.size
+
+        let scrollViewSize = scrollView.bounds.size
         let imageSize = image.size
-        
-        var realImgSize: CGSize
-        if imageSize.width / imageSize.height > imgViewSize.width / imgViewSize.height {
-            realImgSize = CGSize(width: imgViewSize.width,height: imgViewSize.width / imageSize.width * imageSize.height)
-        } else {
-            realImgSize = CGSize(width: imgViewSize.height / imageSize.height * imageSize.width, height: imgViewSize.height)
-        }
-        
-        var frame = CGRect.zero
-        frame.size = realImgSize
-        imageView.frame = frame
-        
-        let screenSize  = scrollView.frame.size
-        let offx = screenSize.width > realImgSize.width ? (screenSize.width - realImgSize.width) / 2 : 0
-        let offy = screenSize.height > realImgSize.height ? (screenSize.height - realImgSize.height) / 2 : 0
-        scrollView.contentInset = UIEdgeInsets(top: offy,
-                                               left: offx,
-                                               bottom: offy,
-                                               right: offx)
-        
-        let scrollViewSize = scrollViewVisibleSize
-        
-        var imageCenter = CGPoint(x: scrollView.contentSize.width / 2.0,
-                                  y: scrollView.contentSize.height / 2.0)
-        
-        let center = scrollViewCenter
-        
-        if scrollView.contentSize.width < scrollViewSize.width {
-            imageCenter.x = center.x
-        }
-        
-        if scrollView.contentSize.height < scrollViewSize.height {
-            imageCenter.y = center.y
-        }
-        
-        imageView.center = imageCenter
+
+        guard imageSize.width > 0, imageSize.height > 0 else { return }
+
+        let hScale = scrollViewSize.width / imageSize.width
+        let vScale = scrollViewSize.height / imageSize.height
+        let minScale = min(hScale, vScale)
+
+        initialZoomScale = minScale
+        scrollView.minimumZoomScale = minScale
+        scrollView.zoomScale = minScale
+
+        let imageViewWidth = imageSize.width * minScale
+        let imageViewHeight = imageSize.height * minScale
+        imageView.frame = CGRect(x: 0, y: 0, width: imageViewWidth, height: imageViewHeight)
+
+        scrollView.contentSize = imageView.frame.size
+
+        let horizontalInset = max((scrollViewSize.width - imageViewWidth) / 2, 0)
+        let verticalInset = max((scrollViewSize.height - imageViewHeight) / 2, 0)
+        scrollView.contentInset = UIEdgeInsets(top: verticalInset,
+                                               left: horizontalInset,
+                                               bottom: verticalInset,
+                                               right: horizontalInset)
     }
-    
+
     @IBAction func didTapBackButton(_ sender: Any) {
         dismiss(animated: true, completion: nil)
     }
-    
-    @IBAction func didTapShareButton(_ sender: Any) {
-        guard let image else { return }
-        let share = UIActivityViewController(
-            activityItems: [image],
-            applicationActivities: nil
-        )
-        present(share, animated: true, completion: nil)
+
+    @IBAction func didTapShareButton(_ sender: UIButton) {
+        guard let url else {
+            print("No URL to share.")
+            return
+        }
+        
+        let activityVC = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+        present(activityVC, animated: true)
     }
+
 }
+
+// MARK: - UIScrollViewDelegate
 
 extension SingleImageViewController: UIScrollViewDelegate {
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         return imageView
     }
+
+    func scrollViewDidZoom(_ scrollView: UIScrollView) {
+        centerImageIfNeeded()
+    }
+
+    private func centerImageIfNeeded() {
+        let scrollViewSize = scrollView.bounds.size
+        let imageViewSize = imageView.frame.size
+
+        let horizontalInset = max((scrollViewSize.width - imageViewSize.width) / 2, 0)
+        let verticalInset = max((scrollViewSize.height - imageViewSize.height) / 2, 0)
+
+        scrollView.contentInset = UIEdgeInsets(top: verticalInset,
+                                               left: horizontalInset,
+                                               bottom: verticalInset,
+                                               right: horizontalInset)
+    }
+
 }
